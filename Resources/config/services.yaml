@@ -1,0 +1,71 @@
+parameters:
+    chamber_orchestra_image.secret: "%kernel.secret%"
+    chamber_orchestra_image.cache: ""
+    chamber_orchestra_image.pngquant.binary: /usr/bin/pngquant
+    chamber_orchestra_image.mozjpeg.binary: /opt/mozjpeg/bin/cjpeg
+    chamber_orchestra_image.cwebp.binary: /usr/local/bin/cwebp
+    chamber_orchestra_image.cwebp.lib: /usr/local/lib
+
+services:
+    _defaults:
+        autoconfigure: true
+        autowire: true
+        public: false
+
+        bind:
+            $defaultResolver: "%chamber_orchestra_image.cache.resolver%"
+            $defaultLoader: "%chamber_orchestra_image.binary.loader%"
+            $globalDefaultImage: '%chamber_orchestra_image.default_image%'
+            $mimeTypes: "@mime_types"
+
+
+    _instanceof:
+        ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\ProcessorInterface:
+            tags: [ "chamber_orchestra_image.filter.processor" ]
+        ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor\PostProcessorInterface:
+            tags: [ "chamber_orchestra_image.filter.post_processor" ]
+
+    # preload drivers
+    Imagine\Imagick\Imagine: ~
+    Imagine\Gd\Imagine: ~
+    Imagine\Gmagick\Imagine: ~
+    Imagine\Image\ImagineInterface: "@chamber_orchestra_image.driver"
+
+    ChamberOrchestra\ImageBundle\:
+        resource: '../../'
+        exclude: "../../{DependencyInjection,Resources,Exception,EventSubscriber,tests,vendor}"
+
+    ChamberOrchestra\ImageBundle\Binary\BinaryMimeTypeGuesser:
+        arguments:
+            - !service
+                class: Symfony\Component\Mime\FileinfoMimeTypeGuesser
+
+    ChamberOrchestra\ImageBundle\Controller\:
+        resource: '../../Controller'
+        public: true
+        tags: [ 'controller.service_arguments' ]
+
+    ChamberOrchestra\ImageBundle\Imagine\Filter\FilterManager:
+        arguments:
+            $processorsLocator: !tagged_locator { tag: chamber_orchestra_image.filter.processor, default_index_method: 'getIndexName' }
+            $postProcessorsLocator: !tagged_locator { tag: chamber_orchestra_image.filter.post_processor, default_index_method: 'getIndexName' }
+
+
+    ChamberOrchestra\ImageBundle\Imagine\Filter\FilterConfiguration:
+        arguments:
+            $filters: "%chamber_orchestra_image.filters%"
+
+    ChamberOrchestra\ImageBundle\Imagine\Cache\Signer:
+        arguments:
+            $secret: "%chamber_orchestra_image.secret%"
+
+
+    ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor\PngquantPostProcessor:
+        arguments: [ '%chamber_orchestra_image.pngquant.binary%' ]
+
+    ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor\MozJpegPostProcessor:
+        arguments: [ '%chamber_orchestra_image.mozjpeg.binary%' ]
+
+    ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor\CwebpPostProcessor:
+        arguments: [ '%chamber_orchestra_image.cwebp.binary%', '%chamber_orchestra_image.cwebp.lib%' ]
+
