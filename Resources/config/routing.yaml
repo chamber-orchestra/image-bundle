@@ -1,0 +1,16 @@
+_chamber_orchestra_image_filter_runtime:
+    path: /_media/cache/resolve/{filter}/rc/{hash}/{path}
+    methods: [ "GET" ]
+    defaults: { _controller: ChamberOrchestra\ImageBundle\Controller\ImageController::filterRuntime }
+    requirements:
+        filter: '[A-Za-z0-9_\-]+'
+        path: '.+'
+        hash: '[^/]++/[^/]++'
+
+_chamber_orchestra_image_filter:
+    path: /_media/cache/resolve/{filter}/{path}
+    methods: [ "GET" ]
+    defaults: { _controller: ChamberOrchestra\ImageBundle\Controller\ImageController::filter }
+    requirements:
+        filter: '[A-Za-z0-9_\-]+'
+        path: '.+'

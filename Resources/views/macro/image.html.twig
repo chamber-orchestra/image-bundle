@@ -1,0 +1,119 @@
+{# @var app \Symfony\Bridge\Twig\AppVariable #}
+{% macro attributes(attr) -%}
+    {%- for attrname, attrvalue in attr -%}
+        {{- " " -}}
+        {%- if attrname in ['placeholder', 'title'] -%}
+            {{- attrname }}="{{ translation_domain is same as(false) ? attrvalue : attrvalue|trans(attr_translation_parameters, translation_domain) }}"
+        {%- elseif attrvalue is same as(true) -%}
+            {{- attrname }}="{{ attrname }}"
+        {%- elseif attrvalue is not same as(false) -%}
+            {{- attrname }}="{{ attrvalue }}"
+        {%- endif -%}
+    {%- endfor -%}
+{%- endmacro -%}
+
+
+{%- macro fit(src, width, height, attr, picture_attr = {}) -%}
+    {# add support of ChamberOrchestra\FileBundle\Model\File #}
+    {%- set src = src.uri|default(src) -%}
+    {%- set attr = attr|default({})|merge({width: attr.width|default(width), height: attr.height|default(height), loading: 'lazy'}) -%}
+    {%- apply spaceless -%}
+        <picture {{ _self.attributes(picture_attr) }}>
+            <source {#
+                    #}srcset="{{ asset(src|default(no_image_url)|fit(width, height, {fit: {density: 2}, output: {format: 'webp'}}), 'file') }} 2x, {#
+            #}{{ asset(src|default(no_image_url)|fit(width, height, {output: {format: 'webp'}}), 'file') }} 1x" {#
+                    #}type="image/webp"/>
+            <source {#
+                    #}srcset="{{ asset(src|default(no_image_url)|fit(width, height, {fit: {density: 2}}), 'file') }} 2x, {#
+            #}{{ asset(src|default(no_image_url)|fit(width, height), 'file') }} 1x"/>
+            <img src="{{ asset(src|default(no_image_url)|fit(width, height), 'file') }}" {{ _self.attributes(attr) }} />
+        </picture>
+    {%- endapply -%}
+{%- endmacro -%}
+
+
+{%- macro fill(src, width, height, attr, picture_attr = {}) -%}
+    {# add support of ChamberOrchestra\FileBundle\Model\File #}
+    {%- set src = src.uri|default(src) -%}
+    {%- set attr = attr|default({})|merge({width: attr.width|default(width), height: attr.height|default(height), loading: 'lazy'}) -%}
+
+    {%- apply spaceless -%}
+        <picture {{ _self.attributes(picture_attr) }}>
+            <source {#
+                    #}srcset="{{ asset( src|default(no_image_url)|fill(width, height, {fill: {density: 2}, output: {format: 'webp'}}), 'file' ) }} 2x, {#
+            #}{{ asset( src|default(no_image_url)|fill(width, height, {output: {format: 'webp'}}) , 'file') }} 1x" {#
+                    #}type="image/webp"/>
+            <source {#
+                    #}srcset="{{ asset(src|default(no_image_url)|fill(width, height, {fill: {density: 2}}), 'file') }} 2x, {#
+            #}{{ asset(src|default(no_image_url)|fill(width, height), 'file') }} 1x"/>
+            <img src="{{ asset(src|default(no_image_url)|fill(width, height), 'file') }}" {{ _self.attributes(attr) }}/>
+        </picture>
+    {%- endapply -%}
+{%- endmacro -%}
+
+
+
+{%- macro css_fit(src, width, height, use2x = true) -%}
+
+    {# add support of ChamberOrchestra\FileBundle\Model\File #}
+    {%- set src = src.uri|default(src) -%}
+    {%- set absolute = app.debug -%}
+
+    {%- set url = (src|default(no_image_url)|fit(width, height)) -%}
+    {%- set webp = (src|default(no_image_url)|fit(width, height, {output: {format: 'webp'}})) -%}
+    {%- set url2x = (src|default(no_image_url)|fit(width , height , {fit: {density: 2}})) -%}
+    {%- set webp2x = (src|default(no_image_url)|fit(width, height , {fit: {density: 2}, output: {format: 'webp'}})) -%}
+
+    {# {%- if absolute -%} #}
+    {%- set url = asset(url, 'file') -%}
+    {%- set webp = asset(webp, 'file') -%}
+    {%- set url2x = asset(url2x, 'file') -%}
+    {%- set webp2x = asset(webp2x, 'file') -%}
+    {# {%- endif -%} #}
+
+    {%- set attr = {
+        "style": "" ~
+        "--bg-url: url(" ~ url ~ ");" ~
+        "--bg-url-webp: url(" ~  webp ~ ");" ~
+        ( use2x ?
+        "--bg-url-2x: url(" ~  url2x ~ ");" ~
+        "--bg-url-webp-2x: url(" ~  webp2x ~ ");"
+        : "")  ~
+        "--bg-width: "~ width ~ "px;" ~
+        "--bg-height: "~ height ~ "px;"
+    } -%}
+    {{- _self.attributes(attr) -}}
+{%- endmacro -%}
+
+{%- macro css_fill(src, width, height, use2x = true) -%}
+
+    {# add support of ChamberOrchestra\FileBundle\Model\File #}
+    {%- set src = src.uri|default(src) -%}
+    {%- set absolute = app.debug -%}
+
+    {%- set url = (src|default(no_image_url)|fill(width, height)) -%}
+    {%- set webp = (src|default(no_image_url)|fill(width, height, {output: {format: 'webp'}})) -%}
+    {%- set url2x = (src|default(no_image_url)|fill(width, height, {fill: {density: 2}})) -%}
+    {%- set webp2x = (src|default(no_image_url)|fill(width, height, {fill: {density: 2}, output: {format: 'webp'}})) -%}
+
+
+    {# {%- if absolute -%} #}
+    {%- set url = asset(url, 'file') -%}
+    {%- set webp = asset(webp, 'file') -%}
+    {%- set url2x = asset(url2x, 'file') -%}
+    {%- set webp2x = asset(webp2x, 'file') -%}
+    {# {%- endif -%} #}
+
+    {%- set attr = {
+        "style": "" ~
+        "--bg-url: url(" ~ url ~ ");" ~
+        "--bg-url-webp: url(" ~  webp ~ ");" ~
+        (use2x ?
+        "--bg-url-2x: url(" ~  url2x ~ ");" ~
+        "--bg-url-webp-2x: url(" ~  webp2x ~ ");"
+        : "" )  ~
+        "--bg-width: "~ width ~ "px;" ~
+        "--bg-height: "~ height ~ "px;"
+    } -%}
+    {{- _self.attributes(attr) -}}
+{%- endmacro -%}
