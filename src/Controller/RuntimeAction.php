@@ -57,7 +57,7 @@ class RuntimeAction
             throw new BadRequestHttpException('Runtime processors configuration is too deeply nested.');
         }
 
-        $filterSecret = ($this->filterConfig->get($filter))['secret'];
+        $filterSecret = $this->filterConfig->get($filter)['secret'];
 
         if (true !== $this->signer->check($hash, $path, $filterSecret, $config)) {
             throw new BadRequestHttpException(\sprintf('Signed url does not pass the sign check for path "%s" and filter "%s" and runtime config %s', $path, $filter, \json_encode($config)));

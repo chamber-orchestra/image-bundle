@@ -162,7 +162,7 @@ class CacheManager
 
     private function getFilterSecret(string $filter): string
     {
-        return ($this->filterConfig->get($filter))['secret'];
+        return $this->filterConfig->get($filter)['secret'];
     }
 
     /**

@@ -16,10 +16,10 @@ use ChamberOrchestra\ImageBundle\DependencyInjection\Factory\Loader\LoaderFactor
 use ChamberOrchestra\ImageBundle\DependencyInjection\Factory\Resolver\ResolverFactoryInterface;
 use ChamberOrchestra\ImageBundle\EventSubscriber\FileRemoveSubscriber;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\CacheManager;
+use ChamberOrchestra\ImageBundle\Imagine\Cache\Resolver\CacheResolver;
 use ChamberOrchestra\ImageBundle\Imagine\Data\DataManager;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
-use ChamberOrchestra\ImageBundle\Imagine\Cache\Resolver\CacheResolver;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
@@ -110,9 +110,7 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
         foreach ($filters as $name => &$filter) {
             if ($filter['exposed'] ?? false) {
                 if (null === $filter['secret']) {
-                    throw new InvalidConfigurationException(
-                        \sprintf('Filter "%s" is exposed and requires an explicit "secret" different from the application secret.', $name),
-                    );
+                    throw new InvalidConfigurationException(\sprintf('Filter "%s" is exposed and requires an explicit "secret" different from the application secret.', $name));
                 }
             }
 
@@ -125,9 +123,7 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
             $filter['exposed'] ??= false;
 
             if ($filter['exposed'] && $filter['secret'] === $container->getParameter('kernel.secret')) {
-                throw new InvalidConfigurationException(
-                    \sprintf('Filter "%s" is exposed and its "secret" must differ from the application secret.', $name),
-                );
+                throw new InvalidConfigurationException(\sprintf('Filter "%s" is exposed and its "secret" must differ from the application secret.', $name));
             }
         }
         unset($filter);
@@ -141,7 +137,7 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
     }
 
     /**
-     * @param array<string, array<string, mixed>>                      $config
+     * @param array<string, array<string, mixed>>                       $config
      * @param array{enabled: bool|null, service: string, lifetime: int} $cacheConfig
      */
     protected function loadResolvers(array $config, ContainerBuilder $container, array $cacheConfig): void

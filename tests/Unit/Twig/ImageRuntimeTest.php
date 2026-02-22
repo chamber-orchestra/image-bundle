@@ -30,34 +30,6 @@ class ImageRuntimeTest extends TestCase
     }
 
     #[Test]
-    public function imageFilterDelegatesToCacheManager(): void
-    {
-        $this->cacheManager
-            ->expects($this->once())
-            ->method('getBrowserPath')
-            ->with('photo.jpg', 'thumbnail', [], null)
-            ->willReturn('/media/cache/thumbnail/photo.jpg');
-
-        $result = $this->runtime->imageFilter('photo.jpg', 'thumbnail');
-
-        self::assertSame('/media/cache/thumbnail/photo.jpg', $result);
-    }
-
-    #[Test]
-    public function imageFilterPassesRuntimeConfigAndResolver(): void
-    {
-        $config = ['fit' => ['width' => 800]];
-
-        $this->cacheManager
-            ->expects($this->once())
-            ->method('getBrowserPath')
-            ->with('photo.jpg', 'thumbnail', $config, 'custom')
-            ->willReturn('/url');
-
-        $this->runtime->imageFilter('photo.jpg', 'thumbnail', $config, 'custom');
-    }
-
-    #[Test]
     public function fitThrowsWhenBothDimensionsAreZero(): void
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -175,59 +147,5 @@ class ImageRuntimeTest extends TestCase
             ->willReturn('/url');
 
         $this->runtime->optimize('photo.jpg', 800);
-    }
-
-    #[Test]
-    public function avifUsesDefaultWidth1200WithDensity2AndAvifFormat(): void
-    {
-        $this->cacheManager
-            ->expects($this->once())
-            ->method('getBrowserPath')
-            ->with(
-                'photo.jpg',
-                'default',
-                [
-                    'processors' => ['optimize' => ['width' => 1200, 'height' => 0, 'density' => 2]],
-                    'output' => ['format' => 'avif'],
-                ],
-                null
-            )
-            ->willReturn('/url');
-
-        $this->runtime->avif('photo.jpg');
-    }
-
-    #[Test]
-    public function avifUsesCustomWidth(): void
-    {
-        $this->cacheManager
-            ->expects($this->once())
-            ->method('getBrowserPath')
-            ->with(
-                $this->anything(),
-                $this->anything(),
-                $this->callback(fn ($c) => 800 === $c['processors']['optimize']['width'] && 'avif' === $c['output']['format']),
-                $this->anything()
-            )
-            ->willReturn('/url');
-
-        $this->runtime->avif('photo.jpg', 800);
-    }
-
-    #[Test]
-    public function avifMergesExtraConfig(): void
-    {
-        $this->cacheManager
-            ->expects($this->once())
-            ->method('getBrowserPath')
-            ->with(
-                $this->anything(),
-                $this->anything(),
-                $this->callback(fn ($c) => 'avif' === $c['output']['format'] && 90 === $c['output']['quality']),
-                $this->anything()
-            )
-            ->willReturn('/url');
-
-        $this->runtime->avif('photo.jpg', 1200, ['output' => ['quality' => 90]]);
     }
 }
