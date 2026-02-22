@@ -79,8 +79,10 @@ class CacheResolver implements ResolverInterface
         $indexItem = $this->cache->getItem($indexKey);
 
         if ($indexItem->isHit()) {
-            foreach ((array) $indexItem->get() as $cacheKey) {
-                $this->cache->deleteItem((string) $cacheKey);
+            /** @var list<string> $keys */
+            $keys = (array) $indexItem->get();
+            foreach ($keys as $cacheKey) {
+                $this->cache->deleteItem($cacheKey);
             }
             $this->cache->deleteItem($indexKey);
         }

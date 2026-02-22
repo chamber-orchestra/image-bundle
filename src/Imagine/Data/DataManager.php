@@ -127,7 +127,7 @@ class DataManager
         $config = $this->filterConfig->get($filter);
 
         $defaultImage = null;
-        if (null !== $config['default_image']) {
+        if (null !== ($config['default_image'] ?? null)) {
             /** @var string $defaultImage */
             $defaultImage = $config['default_image'];
         } elseif (null !== $this->globalDefaultImage) {

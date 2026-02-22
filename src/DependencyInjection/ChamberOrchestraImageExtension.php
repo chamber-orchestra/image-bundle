@@ -98,7 +98,7 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
         $concurrency = $config['concurrency'];
         $container->setParameter('chamber_orchestra_image.concurrency', $concurrency);
 
-        /** @var array<string, mixed> $filters */
+        /** @var array<string, array<string, mixed>> $filters */
         $filters = $config['filters'];
 
         $globalAsync = match ($config['async']) {
