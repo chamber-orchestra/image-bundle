@@ -4,3 +4,4 @@ composer.lock
 .claude/settings.local.json
 .php-cs-fixer.cache
 .phpunit.cache/
+.env

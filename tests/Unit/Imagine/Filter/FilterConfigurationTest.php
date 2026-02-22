@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Unit\Imagine\Filter;
 
 use ChamberOrchestra\ImageBundle\Exception\NonExistingFilterException;
@@ -70,5 +77,45 @@ class FilterConfigurationTest extends TestCase
         $config = new FilterConfiguration();
 
         self::assertSame([], $config->all());
+    }
+
+    #[Test]
+    public function asyncKeyIsPreserved(): void
+    {
+        $filters = [
+            'thumbnail' => [
+                'resolver' => 'default',
+                'loader' => 'default',
+                'secret' => 's3cret',
+                'async' => true,
+                'exposed' => false,
+                'processors' => [],
+                'post_processors' => [],
+            ],
+        ];
+
+        $config = new FilterConfiguration($filters);
+
+        self::assertTrue($config->get('thumbnail')['async']);
+    }
+
+    #[Test]
+    public function exposedKeyIsPreserved(): void
+    {
+        $filters = [
+            'thumbnail' => [
+                'resolver' => 'default',
+                'loader' => 'default',
+                'secret' => 's3cret',
+                'async' => false,
+                'exposed' => true,
+                'processors' => [],
+                'post_processors' => [],
+            ],
+        ];
+
+        $config = new FilterConfiguration($filters);
+
+        self::assertTrue($config->get('thumbnail')['exposed']);
     }
 }

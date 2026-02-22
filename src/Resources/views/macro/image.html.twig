@@ -1,0 +1,154 @@
+{# @var app \Symfony\Bridge\Twig\AppVariable #}
+{% macro attributes(attr) -%}
+    {%- for attrname, attrvalue in attr -%}
+        {{- ' ' -}}
+        {%- if attrname in ['placeholder', 'title'] -%}
+            {{- attrname }}="{{ translation_domain is same as(false) ? attrvalue : attrvalue|trans(attr_translation_parameters, translation_domain) }}"
+        {%- elseif attrvalue is same as(true) -%}
+            {{- attrname }}="{{ attrname }}"
+        {%- elseif attrvalue is not same as(false) -%}
+            {{- attrname }}="{{ attrvalue }}"
+        {%- endif -%}
+    {%- endfor -%}
+{%- endmacro -%}
+
+{%- macro fit(src, width, height, attr, picture_attr = {}) -%}
+    {# add support of ChamberOrchestra\FileBundle\Model\File #}
+    {%- set src = src.uri|default(src) -%}
+    {%- set attr = attr|default({})|merge({width: attr.width|default(width), height: attr.height|default(height), style: 'height: auto', loading: 'lazy', decoding: 'async'}) -%}
+    <picture {{ _self.attributes(picture_attr) -}}>
+            <source {#
+                    #}srcset="{{ asset(src|default('')|fit(width, height, {fit: {density: 3}, output: {format: 'avif'}}), 'file') }} 3x, {#
+            #}{{ asset(src|default('')|fit(width, height, {fit: {density: 2}, output: {format: 'avif'}}), 'file') }} 2x, {#
+            #}{{ asset(src|default('')|fit(width, height, {output: {format: 'avif'}}), 'file') }} 1x" {#
+                    #}type="image/avif"/>
+            <source {#
+                    #}srcset="{{ asset(src|default('')|fit(width, height, {fit: {density: 3}, output: {format: 'webp'}}), 'file') }} 3x, {#
+            #}{{ asset(src|default('')|fit(width, height, {fit: {density: 2}, output: {format: 'webp'}}), 'file') }} 2x, {#
+            #}{{ asset(src|default('')|fit(width, height, {output: {format: 'webp'}}), 'file') }} 1x" {#
+                    #}type="image/webp"/>
+            <source {#
+                    #}srcset="{{ asset(src|default('')|fit(width, height, {fit: {density: 3}}), 'file') }} 3x, {#
+            #}{{ asset(src|default('')|fit(width, height, {fit: {density: 2}}), 'file') }} 2x, {#
+            #}{{ asset(src|default('')|fit(width, height), 'file') }} 1x"/>
+            <img src="{{ asset(src|default('')|fit(width, height), 'file') }}" {{ _self.attributes(attr) }} />
+    </picture>
+{%- endmacro -%}
+
+{%- macro fill(src, width, height, attr, picture_attr = {}) -%}
+    {# add support of ChamberOrchestra\FileBundle\Model\File #}
+    {%- set src = src.uri|default(src) -%}
+    {%- set attr = attr|default({})|merge({width: attr.width|default(width), height: attr.height|default(height), style: 'height: auto', loading: 'lazy', decoding: 'async'}) -%}
+
+    <picture {{ _self.attributes(picture_attr) -}}>
+            <source {#
+                    #}srcset="{{ asset(src|default('')|fill(width, height, {fill: {density: 3}, output: {format: 'avif'}}), 'file') }} 3x, {#
+            #}{{ asset(src|default('')|fill(width, height, {fill: {density: 2}, output: {format: 'avif'}}), 'file') }} 2x, {#
+            #}{{ asset(src|default('')|fill(width, height, {output: {format: 'avif'}}), 'file') }} 1x" {#
+                    #}type="image/avif"/>
+            <source {#
+                    #}srcset="{{ asset(src|default('')|fill(width, height, {fill: {density: 3}, output: {format: 'webp'}}), 'file') }} 3x, {#
+            #}{{ asset(src|default('')|fill(width, height, {fill: {density: 2}, output: {format: 'webp'}}), 'file') }} 2x, {#
+            #}{{ asset(src|default('')|fill(width, height, {output: {format: 'webp'}}), 'file') }} 1x" {#
+                    #}type="image/webp"/>
+            <source {#
+                    #}srcset="{{ asset(src|default('')|fill(width, height, {fill: {density: 3}}), 'file') }} 3x, {#
+            #}{{ asset(src|default('')|fill(width, height, {fill: {density: 2}}), 'file') }} 2x, {#
+            #}{{ asset(src|default('')|fill(width, height), 'file') }} 1x"/>
+            <img src="{{ asset(src|default('')|fill(width, height), 'file') }}" {{ _self.attributes(attr) }}/>
+    </picture>
+{%- endmacro -%}
+
+{%- macro css_fit(src, width, height, use2x = true) -%}
+
+    {# add support of ChamberOrchestra\FileBundle\Model\File #}
+    {%- set src = src.uri|default(src) -%}
+    {%- set absolute = app.debug -%}
+
+    {%- set url = (src|default('')|fit(width, height)) -%}
+    {%- set webp = (src|default('')|fit(width, height, {output: {format: 'webp'}})) -%}
+    {%- set avif = (src|default('')|fit(width, height, {output: {format: 'avif'}})) -%}
+    {%- set url2x = (src|default('')|fit(width, height, {fit: {density: 2}})) -%}
+    {%- set webp2x = (src|default('')|fit(width, height, {fit: {density: 2}, output: {format: 'webp'}})) -%}
+    {%- set avif2x = (src|default('')|fit(width, height, {fit: {density: 2}, output: {format: 'avif'}})) -%}
+    {%- set url3x = (src|default('')|fit(width, height, {fit: {density: 3}})) -%}
+    {%- set webp3x = (src|default('')|fit(width, height, {fit: {density: 3}, output: {format: 'webp'}})) -%}
+    {%- set avif3x = (src|default('')|fit(width, height, {fit: {density: 3}, output: {format: 'avif'}})) -%}
+
+    {# {%- if absolute -%} #}
+    {%- set url = asset(url, 'file') -%}
+    {%- set webp = asset(webp, 'file') -%}
+    {%- set avif = asset(avif, 'file') -%}
+    {%- set url2x = asset(url2x, 'file') -%}
+    {%- set webp2x = asset(webp2x, 'file') -%}
+    {%- set avif2x = asset(avif2x, 'file') -%}
+    {%- set url3x = asset(url3x, 'file') -%}
+    {%- set webp3x = asset(webp3x, 'file') -%}
+    {%- set avif3x = asset(avif3x, 'file') -%}
+    {# {%- endif -%} #}
+
+    {%- set attr = {
+        style: '' ~
+        "--bg-url: url('" ~ url|e('css') ~ "');" ~
+        "--bg-url-avif: url('" ~ avif|e('css') ~ "');" ~
+        "--bg-url-webp: url('" ~ webp|e('css') ~ "');" ~
+        (use2x ?
+        "--bg-url-2x: url('" ~ url2x|e('css') ~ "');" ~
+        "--bg-url-avif-2x: url('" ~ avif2x|e('css') ~ "');" ~
+        "--bg-url-webp-2x: url('" ~ webp2x|e('css') ~ "');" ~
+        "--bg-url-3x: url('" ~ url3x|e('css') ~ "');" ~
+        "--bg-url-avif-3x: url('" ~ avif3x|e('css') ~ "');" ~
+        "--bg-url-webp-3x: url('" ~ webp3x|e('css') ~ "');"
+        : '') ~
+        '--bg-width: ' ~ width ~ 'px;' ~
+        '--bg-height: ' ~ height ~ 'px;',
+    } -%}
+    {{- _self.attributes(attr) -}}
+{%- endmacro -%}
+
+{%- macro css_fill(src, width, height, use2x = true) -%}
+
+    {# add support of ChamberOrchestra\FileBundle\Model\File #}
+    {%- set src = src.uri|default(src) -%}
+    {%- set absolute = app.debug -%}
+
+    {%- set url = (src|default('')|fill(width, height)) -%}
+    {%- set webp = (src|default('')|fill(width, height, {output: {format: 'webp'}})) -%}
+    {%- set avif = (src|default('')|fill(width, height, {output: {format: 'avif'}})) -%}
+    {%- set url2x = (src|default('')|fill(width, height, {fill: {density: 2}})) -%}
+    {%- set webp2x = (src|default('')|fill(width, height, {fill: {density: 2}, output: {format: 'webp'}})) -%}
+    {%- set avif2x = (src|default('')|fill(width, height, {fill: {density: 2}, output: {format: 'avif'}})) -%}
+    {%- set url3x = (src|default('')|fill(width, height, {fill: {density: 3}})) -%}
+    {%- set webp3x = (src|default('')|fill(width, height, {fill: {density: 3}, output: {format: 'webp'}})) -%}
+    {%- set avif3x = (src|default('')|fill(width, height, {fill: {density: 3}, output: {format: 'avif'}})) -%}
+
+    {# {%- if absolute -%} #}
+    {%- set url = asset(url, 'file') -%}
+    {%- set webp = asset(webp, 'file') -%}
+    {%- set avif = asset(avif, 'file') -%}
+    {%- set url2x = asset(url2x, 'file') -%}
+    {%- set webp2x = asset(webp2x, 'file') -%}
+    {%- set avif2x = asset(avif2x, 'file') -%}
+    {%- set url3x = asset(url3x, 'file') -%}
+    {%- set webp3x = asset(webp3x, 'file') -%}
+    {%- set avif3x = asset(avif3x, 'file') -%}
+    {# {%- endif -%} #}
+
+    {%- set attr = {
+        style: '' ~
+        "--bg-url: url('" ~ url|e('css') ~ "');" ~
+        "--bg-url-avif: url('" ~ avif|e('css') ~ "');" ~
+        "--bg-url-webp: url('" ~ webp|e('css') ~ "');" ~
+        (use2x ?
+        "--bg-url-2x: url('" ~ url2x|e('css') ~ "');" ~
+        "--bg-url-avif-2x: url('" ~ avif2x|e('css') ~ "');" ~
+        "--bg-url-webp-2x: url('" ~ webp2x|e('css') ~ "');" ~
+        "--bg-url-3x: url('" ~ url3x|e('css') ~ "');" ~
+        "--bg-url-avif-3x: url('" ~ avif3x|e('css') ~ "');" ~
+        "--bg-url-webp-3x: url('" ~ webp3x|e('css') ~ "');"
+        : '') ~
+        '--bg-width: ' ~ width ~ 'px;' ~
+        '--bg-height: ' ~ height ~ 'px;',
+    } -%}
+    {{- _self.attributes(attr) -}}
+{%- endmacro -%}

@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Unit\Imagine\Filter\Processor;
 
 use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\OutputProcessor;
@@ -34,7 +41,6 @@ class OutputProcessorTest extends TestCase
         self::assertSame($image, $result);
         self::assertNull($config['format']);
         self::assertNull($config['quality']);
-        self::assertNull($config['path']);
     }
 
     #[Test]
@@ -47,18 +53,6 @@ class OutputProcessorTest extends TestCase
         $processor->apply($image, ['quality' => 80], $config);
 
         self::assertSame(80, $config['quality']);
-    }
-
-    #[Test]
-    public function applyWithPathSetsConfigPath(): void
-    {
-        $image = $this->createMock(ImageInterface::class);
-        $processor = new OutputProcessor($this->imagine);
-
-        $config = [];
-        $processor->apply($image, ['path' => 'custom/output.jpg'], $config);
-
-        self::assertSame('custom/output.jpg', $config['path']);
     }
 
     #[Test]
@@ -97,15 +91,27 @@ class OutputProcessorTest extends TestCase
     }
 
     #[Test]
-    public function applyThrowsForNonImagickDriverWithFormat(): void
+    public function applyAcceptsValidFormatForAnyDriver(): void
     {
-        // Non-Imagick imagine mock — format validation should reject any non-null format
+        $image = $this->createMock(ImageInterface::class);
+        $processor = new OutputProcessor($this->imagine);
+
+        $config = [];
+        $result = $processor->apply($image, ['format' => 'webp'], $config);
+
+        self::assertSame($image, $result);
+        self::assertSame('webp', $config['format']);
+    }
+
+    #[Test]
+    public function applyThrowsForInvalidFormat(): void
+    {
         $image = $this->createMock(ImageInterface::class);
         $processor = new OutputProcessor($this->imagine);
 
         $this->expectException(InvalidOptionsException::class);
 
-        $processor->apply($image, ['format' => 'webp']);
+        $processor->apply($image, ['format' => 'invalid_format']);
     }
 
     #[Test]

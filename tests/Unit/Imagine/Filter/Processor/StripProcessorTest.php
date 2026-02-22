@@ -2,12 +2,18 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Unit\Imagine\Filter\Processor;
 
 use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\FillProcessor;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\FitProcessor;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\StripProcessor;
-use Imagine\Filter\Basic\Strip;
 use Imagine\Image\ImageInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;

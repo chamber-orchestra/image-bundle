@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Integrational\Binary;
 
 use ChamberOrchestra\ImageBundle\Binary\Loader\FileSystemLoader;
@@ -19,8 +26,8 @@ class FileSystemLoaderIntegrationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->rootDir = sys_get_temp_dir().'/image_bundle_loader_'.uniqid();
-        mkdir($this->rootDir, 0755, true);
+        $this->rootDir = \realpath(\sys_get_temp_dir()).'/image_bundle_loader_'.\uniqid();
+        \mkdir($this->rootDir, 0755, true);
 
         $this->loader = new FileSystemLoader(
             MimeTypes::getDefault(),
@@ -78,7 +85,7 @@ class FileSystemLoaderIntegrationTest extends TestCase
     #[Test]
     public function findWorksWithFileInSubdirectory(): void
     {
-        mkdir($this->rootDir.'/sub', 0755, true);
+        \mkdir($this->rootDir.'/sub', 0755, true);
         $this->writeSmallPng($this->rootDir.'/sub/image.png');
 
         $binary = $this->loader->find('sub/image.png');
@@ -112,41 +119,41 @@ class FileSystemLoaderIntegrationTest extends TestCase
             ."\xFF\xC4\x00\xB5\x10\x00\x02\x01\x03\x03\x02\x04\x03\x05\x05\x04\x04\x00\x00\x01}"
             ."\xFF\xDA\x00\x08\x01\x01\x00\x00?\x00\xFB\x00\x00\x1F\xFF\xD9";
 
-        file_put_contents($path, $data);
+        \file_put_contents($path, $data);
     }
 
     private function writeSmallPng(string $path): void
     {
         // Use GD to create a minimal 1x1 PNG
-        if (function_exists('imagecreate')) {
-            $img = imagecreate(1, 1);
-            imagecolorallocate($img, 255, 255, 255);
-            ob_start();
-            imagepng($img);
-            $data = ob_get_clean();
-            file_put_contents($path, $data);
+        if (\function_exists('imagecreate')) {
+            $img = \imagecreate(1, 1);
+            \imagecolorallocate($img, 255, 255, 255);
+            \ob_start();
+            \imagepng($img);
+            $data = \ob_get_clean();
+            \file_put_contents($path, $data);
         } else {
             // Fallback: minimal PNG header (may not pass MIME detection but tests path logic)
-            file_put_contents($path, "\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82");
+            \file_put_contents($path, "\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82");
         }
     }
 
     private function removeDir(string $dir): void
     {
-        if (!is_dir($dir)) {
+        if (!\is_dir($dir)) {
             return;
         }
 
-        foreach (scandir($dir) as $entry) {
-            if ($entry === '.' || $entry === '..') {
+        foreach (\scandir($dir) as $entry) {
+            if ('.' === $entry || '..' === $entry) {
                 continue;
             }
 
             $path = $dir.'/'.$entry;
 
-            is_dir($path) ? $this->removeDir($path) : unlink($path);
+            \is_dir($path) ? $this->removeDir($path) : \unlink($path);
         }
 
-        rmdir($dir);
+        \rmdir($dir);
     }
 }

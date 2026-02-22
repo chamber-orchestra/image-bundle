@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Integrational\Binary;
 
 use ChamberOrchestra\ImageBundle\Binary\Locator\FileSystemLocator;
@@ -17,8 +24,8 @@ class FileSystemLocatorIntegrationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->rootDir = sys_get_temp_dir().'/image_bundle_locator_'.uniqid();
-        mkdir($this->rootDir, 0755, true);
+        $this->rootDir = \sys_get_temp_dir().'/image_bundle_locator_'.\uniqid();
+        \mkdir($this->rootDir, 0755, true);
 
         $this->locator = new FileSystemLocator();
         $this->locator->setOptions(['roots' => [$this->rootDir]]);
@@ -32,22 +39,22 @@ class FileSystemLocatorIntegrationTest extends TestCase
     #[Test]
     public function locateFindsFileInRoot(): void
     {
-        file_put_contents($this->rootDir.'/photo.jpg', 'image-data');
+        \file_put_contents($this->rootDir.'/photo.jpg', 'image-data');
 
         $result = $this->locator->locate('photo.jpg');
 
-        self::assertSame(realpath($this->rootDir.'/photo.jpg'), $result);
+        self::assertSame(\realpath($this->rootDir.'/photo.jpg'), $result);
     }
 
     #[Test]
     public function locateFindsFileInSubdirectory(): void
     {
-        mkdir($this->rootDir.'/sub', 0755, true);
-        file_put_contents($this->rootDir.'/sub/photo.jpg', 'image-data');
+        \mkdir($this->rootDir.'/sub', 0755, true);
+        \file_put_contents($this->rootDir.'/sub/photo.jpg', 'image-data');
 
         $result = $this->locator->locate('sub/photo.jpg');
 
-        self::assertSame(realpath($this->rootDir.'/sub/photo.jpg'), $result);
+        self::assertSame(\realpath($this->rootDir.'/sub/photo.jpg'), $result);
     }
 
     #[Test]
@@ -62,14 +69,14 @@ class FileSystemLocatorIntegrationTest extends TestCase
     public function locateThrowsForPathOutsideRoot(): void
     {
         // Create a file in /tmp directly (outside the root)
-        $outsideFile = sys_get_temp_dir().'/outside.jpg';
-        file_put_contents($outsideFile, 'image-data');
+        $outsideFile = \sys_get_temp_dir().'/outside.jpg';
+        \file_put_contents($outsideFile, 'image-data');
 
         try {
             $this->expectException(NotLoadableException::class);
             $this->locator->locate($outsideFile);
         } finally {
-            unlink($outsideFile);
+            \unlink($outsideFile);
         }
     }
 
@@ -98,11 +105,11 @@ class FileSystemLocatorIntegrationTest extends TestCase
         $namedLocator = new FileSystemLocator();
         $namedLocator->setOptions(['roots' => ['images' => $this->rootDir]]);
 
-        file_put_contents($this->rootDir.'/photo.jpg', 'image-data');
+        \file_put_contents($this->rootDir.'/photo.jpg', 'image-data');
 
         $result = $namedLocator->locate('@images:photo.jpg');
 
-        self::assertSame(realpath($this->rootDir.'/photo.jpg'), $result);
+        self::assertSame(\realpath($this->rootDir.'/photo.jpg'), $result);
     }
 
     #[Test]
@@ -126,9 +133,9 @@ class FileSystemLocatorIntegrationTest extends TestCase
     #[Test]
     public function locateSearchesMultipleRoots(): void
     {
-        $secondRoot = sys_get_temp_dir().'/image_bundle_root2_'.uniqid();
-        mkdir($secondRoot, 0755, true);
-        file_put_contents($secondRoot.'/from-second.jpg', 'image-data');
+        $secondRoot = \sys_get_temp_dir().'/image_bundle_root2_'.\uniqid();
+        \mkdir($secondRoot, 0755, true);
+        \file_put_contents($secondRoot.'/from-second.jpg', 'image-data');
 
         try {
             $locator = new FileSystemLocator();
@@ -136,29 +143,29 @@ class FileSystemLocatorIntegrationTest extends TestCase
 
             $result = $locator->locate('from-second.jpg');
 
-            self::assertSame(realpath($secondRoot.'/from-second.jpg'), $result);
+            self::assertSame(\realpath($secondRoot.'/from-second.jpg'), $result);
         } finally {
-            unlink($secondRoot.'/from-second.jpg');
-            rmdir($secondRoot);
+            \unlink($secondRoot.'/from-second.jpg');
+            \rmdir($secondRoot);
         }
     }
 
     private function removeDir(string $dir): void
     {
-        if (!is_dir($dir)) {
+        if (!\is_dir($dir)) {
             return;
         }
 
-        foreach (scandir($dir) as $entry) {
-            if ($entry === '.' || $entry === '..') {
+        foreach (\scandir($dir) as $entry) {
+            if ('.' === $entry || '..' === $entry) {
                 continue;
             }
 
             $path = $dir.'/'.$entry;
 
-            is_dir($path) ? $this->removeDir($path) : unlink($path);
+            \is_dir($path) ? $this->removeDir($path) : \unlink($path);
         }
 
-        rmdir($dir);
+        \rmdir($dir);
     }
 }
