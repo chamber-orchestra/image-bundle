@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Unit\Imagine\Cache\Resolver;
 
 use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
@@ -57,9 +64,9 @@ class CacheResolverTest extends TestCase
     public function resolveReturnsCachedValueWhenPresent(): void
     {
         $item = $this->createMock(CacheItemInterface::class);
+        $item->method('isHit')->willReturn(true);
         $item->method('get')->willReturn('/media/cache/thumb/photo.jpg');
 
-        $this->cache->method('hasItem')->willReturn(true);
         $this->cache->method('getItem')->willReturn($item);
 
         $result = $this->resolver->resolve('photo.jpg', 'thumb');
@@ -70,8 +77,10 @@ class CacheResolverTest extends TestCase
     #[Test]
     public function resolveForwardsToInnerAndCachesWhenMissing(): void
     {
-        $this->cache->method('hasItem')->willReturn(false);
         $this->innerResolver->method('resolve')->willReturn('/media/cache/thumb/photo.jpg');
+
+        $cacheItem = $this->createMock(CacheItemInterface::class);
+        $cacheItem->method('isHit')->willReturn(false);
 
         $indexItem = $this->createMock(CacheItemInterface::class);
         $indexItem->method('isHit')->willReturn(false);
@@ -82,7 +91,7 @@ class CacheResolverTest extends TestCase
         $contentItem->method('set')->willReturnSelf();
         $contentItem->method('expiresAfter')->willReturnSelf();
 
-        $this->cache->method('getItem')->willReturnOnConsecutiveCalls($indexItem, $contentItem);
+        $this->cache->method('getItem')->willReturnOnConsecutiveCalls($cacheItem, $indexItem, $contentItem);
         $this->cache->method('save')->willReturn(true);
 
         $result = $this->resolver->resolve('photo.jpg', 'thumb');
@@ -103,37 +112,36 @@ class CacheResolverTest extends TestCase
     }
 
     #[Test]
-    public function removeDelegatesToInnerResolverAndClearsCache(): void
+    public function removeDelegatesToInnerResolver(): void
     {
-        $this->innerResolver->expects($this->once())
-            ->method('remove')
-            ->with('photo.jpg', 'thumb', '');
-
         $indexItem = $this->createMock(CacheItemInterface::class);
         $indexItem->method('isHit')->willReturn(false);
         $this->cache->method('getItem')->willReturn($indexItem);
 
-        $this->resolver->remove('photo.jpg', 'thumb', '');
+        $this->innerResolver->expects($this->once())
+            ->method('remove')
+            ->with('Ab3xK9_z');
+
+        $this->resolver->remove('Ab3xK9_z');
     }
 
     #[Test]
-    public function removeClearsIndexedCacheEntries(): void
+    public function removeDeletesIndexedCacheEntries(): void
     {
-        $cacheKey = $this->resolver->generateCacheKey('photo.jpg', 'thumb');
+        $cacheKey1 = 'cache.key.1';
+        $cacheKey2 = 'cache.key.2';
 
         $indexItem = $this->createMock(CacheItemInterface::class);
         $indexItem->method('isHit')->willReturn(true);
-        $indexItem->method('get')->willReturn([$cacheKey]);
-        $indexItem->method('set')->willReturnSelf();
+        $indexItem->method('get')->willReturn([$cacheKey1, $cacheKey2]);
 
         $this->cache->method('getItem')->willReturn($indexItem);
-        // deleteItem is called twice: once for $cacheKey, once for $indexKey (when index becomes empty)
-        $this->cache->expects($this->exactly(2))
+        // deleteItem called 3 times: cacheKey1, cacheKey2, indexKey
+        $this->cache->expects($this->exactly(3))
             ->method('deleteItem');
-
         $this->innerResolver->method('remove');
 
-        $this->resolver->remove('photo.jpg', 'thumb', '');
+        $this->resolver->remove('Ab3xK9_z');
     }
 
     #[Test]

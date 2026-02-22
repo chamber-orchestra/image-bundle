@@ -2,13 +2,19 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Unit\Imagine\Cache;
 
 use ChamberOrchestra\ImageBundle\Imagine\Cache\CacheManager;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\Resolver\ResolverInterface;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\SignerInterface;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\FilterConfiguration;
-use OutOfBoundsException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -36,12 +42,13 @@ class CacheManagerTest extends TestCase
         $resolver->method('isStored')->willReturn(true);
         $resolver->method('resolve')->willReturn('/media/cache/thumbnail/photo.jpg');
 
-        $this->filterConfig->method('get')->willReturn(['resolver' => null]);
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
+        $this->signer->method('sign')->willReturn('abcdefgh/12345678');
 
         $manager = $this->makeManager();
         $manager->addResolver($resolver, 'default');
 
-        $url = $manager->getBrowserPath('photo.jpg', 'thumbnail');
+        $url = $manager->getBrowserPath('photo.jpg', 'thumbnail', []);
 
         self::assertSame('/media/cache/thumbnail/photo.jpg', $url);
     }
@@ -52,13 +59,13 @@ class CacheManagerTest extends TestCase
         $resolver = $this->createMock(ResolverInterface::class);
         $resolver->method('isStored')->willReturn(false);
 
-        $this->filterConfig->method('get')->willReturn(['resolver' => null]);
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
         $this->router->method('generate')->willReturn('/_media/cache/resolve/thumbnail/photo.jpg');
 
         $manager = $this->makeManager();
         $manager->addResolver($resolver, 'default');
 
-        $url = $manager->getBrowserPath('photo.jpg', 'thumbnail');
+        $url = $manager->getBrowserPath('photo.jpg', 'thumbnail', []);
 
         self::assertSame('/_media/cache/resolve/thumbnail/photo.jpg', $url);
     }
@@ -69,15 +76,15 @@ class CacheManagerTest extends TestCase
         $resolver = $this->createMock(ResolverInterface::class);
         $resolver->method('isStored')->willReturn(false);
 
-        $this->filterConfig->method('get')->willReturn(['resolver' => null]);
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
         $this->router->expects($this->once())
             ->method('generate')
-            ->with($this->anything(), $this->callback(fn($p) => $p['path'] === 'photo.jpg'));
+            ->with($this->anything(), $this->callback(fn ($p) => 'photo.jpg' === $p['path']));
 
         $manager = $this->makeManager();
         $manager->addResolver($resolver, 'default');
 
-        $manager->getBrowserPath('/photo.jpg', 'thumbnail');
+        $manager->getBrowserPath('/photo.jpg', 'thumbnail', []);
     }
 
     #[Test]
@@ -86,7 +93,7 @@ class CacheManagerTest extends TestCase
         $resolver = $this->createMock(ResolverInterface::class);
         $resolver->method('isStored')->willReturn(false);
 
-        $this->filterConfig->method('get')->willReturn(['resolver' => null]);
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
         $this->signer->method('sign')->willReturn('rc/abc/def12345678901234');
         $this->router->method('generate')->willReturn('/_media/cache/resolve/default/rc/abc12345');
 
@@ -107,7 +114,7 @@ class CacheManagerTest extends TestCase
             ->with('photo.jpg', 'thumbnail')
             ->willReturn(true);
 
-        $this->filterConfig->method('get')->willReturn(['resolver' => null]);
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
 
         $manager = $this->makeManager();
         $manager->addResolver($resolver, 'default');
@@ -118,11 +125,11 @@ class CacheManagerTest extends TestCase
     #[Test]
     public function getResolverThrowsOutOfBoundsWhenNotRegistered(): void
     {
-        $this->filterConfig->method('get')->willReturn(['resolver' => 'nonexistent']);
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'nonexistent', 'secret' => 'test-secret']);
 
         $manager = $this->makeManager();
 
-        $this->expectException(OutOfBoundsException::class);
+        $this->expectException(\OutOfBoundsException::class);
         $this->expectExceptionMessageMatches('/Could not find resolver/');
 
         $manager->isStored('photo.jpg', 'thumbnail');
@@ -157,7 +164,7 @@ class CacheManagerTest extends TestCase
             ->method('store')
             ->with($binary, 'photo.jpg', 'thumbnail');
 
-        $this->filterConfig->method('get')->willReturn(['resolver' => null]);
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
 
         $manager = $this->makeManager();
         $manager->addResolver($resolver, 'default');
@@ -173,58 +180,61 @@ class CacheManagerTest extends TestCase
             ->method('remove');
 
         $this->filterConfig->method('all')->willReturn(['thumb' => [], 'large' => []]);
-        $this->filterConfig->method('get')->willReturn(['resolver' => null]);
-        $this->signer->method('getSignedPrefix')->willReturn('abc/def');
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
+        $this->signer->method('getSignedPrefix')->willReturn('Ab3xK9_z');
 
         $manager = $this->makeManager();
         $manager->addResolver($resolver, 'default');
 
-        $manager->remove('photo.jpg');
+        $manager->remove('scores/moonlight_sonata.jpg');
     }
 
     #[Test]
-    public function removeUsesCorrectRuntimePrefixFromSigner(): void
+    public function removePassesPrefixFromSignerToResolver(): void
     {
         $resolver = $this->createMock(ResolverInterface::class);
 
         $this->filterConfig->method('all')->willReturn(['thumb' => []]);
-        $this->filterConfig->method('get')->willReturn(['resolver' => null]);
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
         $this->signer->expects($this->once())
             ->method('getSignedPrefix')
-            ->with('photo.jpg')
-            ->willReturn('abc123/def456');
+            ->with('scores/moonlight_sonata.jpg', 'test-secret')
+            ->willReturn('Ab3xK9_z');
 
         $resolver->expects($this->once())
             ->method('remove')
-            ->with('photo.jpg', 'thumb', 'rc/abc123/def456');
+            ->with('Ab3xK9_z');
 
         $manager = $this->makeManager();
         $manager->addResolver($resolver, 'default');
 
-        $manager->remove('photo.jpg');
+        $manager->remove('scores/moonlight_sonata.jpg');
     }
 
     #[Test]
-    public function getRuntimePathReturnsOutputPathFromConfig(): void
+    public function getPathReturnsOutputPathFromConfig(): void
     {
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
+
         $manager = $this->makeManager();
 
         $runtimeConfig = ['output' => ['path' => 'custom/path.jpg']];
-        $result = $manager->getRuntimePath('photo.jpg', $runtimeConfig);
+        $result = $manager->getPath('photo.jpg', $runtimeConfig, 'thumbnail');
 
         self::assertSame('custom/path.jpg', $result);
     }
 
     #[Test]
-    public function getRuntimePathBuildsSignedPathWhenNoOutputPath(): void
+    public function getPathBuildsSignedPathWhenNoOutputPath(): void
     {
         $this->signer->method('sign')->willReturn('abc/def12345678901234');
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
 
         $manager = $this->makeManager();
 
-        $result = $manager->getRuntimePath('photo.jpg', ['fit' => ['width' => 800]]);
+        $result = $manager->getPath('photo.jpg', ['fit' => ['width' => 800, 'density' => 2], 'output' => ['format' => 'webp']], 'thumbnail');
 
-        self::assertStringStartsWith('rc/', $result);
+        self::assertSame('abc/def12345678901234/photo@2x.webp', $result);
     }
 
     private function makeManager(): CacheManager

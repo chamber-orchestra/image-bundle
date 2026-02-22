@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Unit\Imagine\Data;
 
 use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
@@ -38,7 +45,7 @@ class DataManagerTest extends TestCase
         $loader = $this->createMock(LoaderInterface::class);
         $loader->method('find')->willReturn($binary);
 
-        $this->filterConfig->method('get')->willReturn(['loader' => null, 'default_image' => null]);
+        $this->filterConfig->method('get')->willReturn(['loader' => 'default', 'default_image' => null]);
 
         $manager = $this->makeManager();
         $manager->addLoader($loader, 'default');
@@ -57,7 +64,7 @@ class DataManagerTest extends TestCase
         // contentGuesser (BinaryMimeTypeGuesser) is used for raw content — not MimeTypes
         $this->contentGuesser->method('guessMimeType')->willReturn('image/png');
         $this->mimeTypes->method('getExtensions')->willReturn(['png']);
-        $this->filterConfig->method('get')->willReturn(['loader' => null, 'default_image' => null]);
+        $this->filterConfig->method('get')->willReturn(['loader' => 'default', 'default_image' => null]);
 
         $manager = $this->makeManager();
         $manager->addLoader($loader, 'default');
@@ -77,13 +84,13 @@ class DataManagerTest extends TestCase
         $loader = $this->createMock(LoaderInterface::class);
         $loader->method('find')->willReturn($binary);
 
-        $this->filterConfig->method('get')->willReturn(['loader' => null, 'default_image' => null]);
+        $this->filterConfig->method('get')->willReturn(['loader' => 'default', 'default_image' => null]);
 
         $manager = $this->makeManager();
         $manager->addLoader($loader, 'default');
 
         $this->expectException(NotLoadableException::class);
-        $this->expectExceptionMessageMatches('/not an image/i');
+        $this->expectExceptionMessageMatches('/unsupported MIME type/i');
 
         $manager->find('thumbnail', 'document.html');
     }
@@ -95,7 +102,7 @@ class DataManagerTest extends TestCase
         $loader->method('find')->willReturn('unidentifiable-bytes');
 
         $this->contentGuesser->method('guessMimeType')->willReturn(null);
-        $this->filterConfig->method('get')->willReturn(['loader' => null, 'default_image' => null]);
+        $this->filterConfig->method('get')->willReturn(['loader' => 'default', 'default_image' => null]);
 
         $manager = $this->makeManager();
         $manager->addLoader($loader, 'default');
@@ -144,7 +151,7 @@ class DataManagerTest extends TestCase
     {
         $this->filterConfig->method('get')->willReturn([
             'default_image' => '/images/filter-default.png',
-            'loader' => null,
+            'loader' => 'default',
         ]);
 
         $manager = $this->makeManager(globalDefault: '/images/global-default.png');
@@ -157,7 +164,7 @@ class DataManagerTest extends TestCase
     {
         $this->filterConfig->method('get')->willReturn([
             'default_image' => null,
-            'loader' => null,
+            'loader' => 'default',
         ]);
 
         $manager = $this->makeManager(globalDefault: '/images/global-default.png');
@@ -170,7 +177,7 @@ class DataManagerTest extends TestCase
     {
         $this->filterConfig->method('get')->willReturn([
             'default_image' => null,
-            'loader' => null,
+            'loader' => 'default',
         ]);
 
         $manager = $this->makeManager();
@@ -178,9 +185,9 @@ class DataManagerTest extends TestCase
         self::assertNull($manager->getDefaultImageUrl('thumbnail'));
     }
 
-    private function makeManager(string|null $globalDefault = null): DataManager
+    private function makeManager(?string $globalDefault = null): DataManager
     {
-        return new DataManager($this->mimeTypes, $this->filterConfig, $this->contentGuesser, null, $globalDefault);
+        return new DataManager($this->mimeTypes, $this->filterConfig, $this->contentGuesser, $globalDefault);
     }
 
     private function makeImageBinary(): BinaryInterface

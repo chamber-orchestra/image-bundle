@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Integrational\Binary;
 
 use ChamberOrchestra\ImageBundle\Binary\Locator\FileSystemInsecureLocator;
@@ -16,8 +23,8 @@ class FileSystemInsecureLocatorIntegrationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->rootDir = sys_get_temp_dir().'/image_bundle_insecure_'.uniqid();
-        mkdir($this->rootDir, 0755, true);
+        $this->rootDir = \sys_get_temp_dir().'/image_bundle_insecure_'.\uniqid();
+        \mkdir($this->rootDir, 0755, true);
 
         $this->locator = new FileSystemInsecureLocator();
         $this->locator->setOptions(['roots' => [$this->rootDir]]);
@@ -31,11 +38,11 @@ class FileSystemInsecureLocatorIntegrationTest extends TestCase
     #[Test]
     public function locateFindsFileInRoot(): void
     {
-        file_put_contents($this->rootDir.'/image.jpg', 'jpeg-data');
+        \file_put_contents($this->rootDir.'/image.jpg', 'jpeg-data');
 
         $result = $this->locator->locate('image.jpg');
 
-        self::assertSame(realpath($this->rootDir.'/image.jpg'), $result);
+        self::assertSame(\realpath($this->rootDir.'/image.jpg'), $result);
     }
 
     #[Test]
@@ -49,8 +56,8 @@ class FileSystemInsecureLocatorIntegrationTest extends TestCase
     #[Test]
     public function locateRejectsDoubleDotInMiddle(): void
     {
-        mkdir($this->rootDir.'/sub', 0755, true);
-        file_put_contents($this->rootDir.'/secret.jpg', 'secret-data');
+        \mkdir($this->rootDir.'/sub', 0755, true);
+        \file_put_contents($this->rootDir.'/secret.jpg', 'secret-data');
 
         $this->expectException(NotLoadableException::class);
 
@@ -60,18 +67,18 @@ class FileSystemInsecureLocatorIntegrationTest extends TestCase
     #[Test]
     public function locateRejectsSymlinksEscapingRoot(): void
     {
-        $outsideFile = sys_get_temp_dir().'/outside_'.uniqid().'.jpg';
-        file_put_contents($outsideFile, 'outside-data');
+        $outsideFile = \sys_get_temp_dir().'/outside_'.\uniqid().'.jpg';
+        \file_put_contents($outsideFile, 'outside-data');
         $symlinkPath = $this->rootDir.'/symlink.jpg';
-        symlink($outsideFile, $symlinkPath);
+        \symlink($outsideFile, $symlinkPath);
 
         try {
             // The insecure locator with realpath+prefix check should reject symlinks pointing outside root
             $this->expectException(NotLoadableException::class);
             $this->locator->locate('symlink.jpg');
         } finally {
-            unlink($symlinkPath);
-            unlink($outsideFile);
+            \unlink($symlinkPath);
+            \unlink($outsideFile);
         }
     }
 
@@ -91,20 +98,20 @@ class FileSystemInsecureLocatorIntegrationTest extends TestCase
 
     private function removeDir(string $dir): void
     {
-        if (!is_dir($dir)) {
+        if (!\is_dir($dir)) {
             return;
         }
 
-        foreach (scandir($dir) as $entry) {
-            if ($entry === '.' || $entry === '..') {
+        foreach (\scandir($dir) as $entry) {
+            if ('.' === $entry || '..' === $entry) {
                 continue;
             }
 
             $path = $dir.'/'.$entry;
 
-            is_dir($path) ? $this->removeDir($path) : unlink($path);
+            \is_dir($path) ? $this->removeDir($path) : \unlink($path);
         }
 
-        rmdir($dir);
+        \rmdir($dir);
     }
 }

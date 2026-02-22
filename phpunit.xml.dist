@@ -3,7 +3,7 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          colors="true"
-         bootstrap="vendor/autoload.php"
+         bootstrap="tests/bootstrap.php"
          failOnRisky="true"
          failOnWarning="true"
          cacheDirectory=".phpunit.cache">
@@ -18,13 +18,7 @@
     </testsuites>
     <source>
         <include>
-            <directory suffix=".php">.</directory>
+            <directory suffix=".php">src</directory>
         </include>
-        <exclude>
-            <directory>tests</directory>
-            <directory>vendor</directory>
-            <directory>bin</directory>
-            <directory>Resources</directory>
-        </exclude>
     </source>
 </phpunit>

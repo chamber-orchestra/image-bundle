@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Unit\Imagine\Cache\Resolver;
 
 use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
@@ -32,11 +39,11 @@ class WebPathResolverTest extends TestCase
     }
 
     #[Test]
-    public function resolveReturnsUrlWithFilterAndPath(): void
+    public function resolveReturnsUrlWithPath(): void
     {
         $url = $this->resolver->resolve('images/photo.jpg', 'thumbnail');
 
-        self::assertSame('/media/cache/thumbnail/images/photo.jpg', $url);
+        self::assertSame('/media/cache/images/photo.jpg', $url);
     }
 
     #[Test]
@@ -44,7 +51,7 @@ class WebPathResolverTest extends TestCase
     {
         $url = $this->resolver->resolve('/images/photo.jpg', 'thumbnail');
 
-        self::assertSame('/media/cache/thumbnail/images/photo.jpg', $url);
+        self::assertSame('/media/cache/images/photo.jpg', $url);
     }
 
     #[Test]
@@ -64,37 +71,19 @@ class WebPathResolverTest extends TestCase
 
         $this->filesystem->expects($this->once())
             ->method('dumpFile')
-            ->with('/var/www/public/media/cache/thumbnail/images/photo.jpg', 'image-data');
+            ->with('/var/www/public/media/cache/images/photo.jpg', 'image-data');
 
         $this->resolver->store($binary, 'images/photo.jpg', 'thumbnail');
     }
 
     #[Test]
-    public function removeDeletesFileViaFilesystem(): void
+    public function removeDeletesPrefixDirectoryViaFilesystem(): void
     {
         $this->filesystem->expects($this->once())
             ->method('remove')
-            ->with('/var/www/public/media/cache/thumbnail/images/photo.jpg');
+            ->with('/var/www/public/media/cache/Ab3xK9_z');
 
-        $this->resolver->remove('images/photo.jpg', 'thumbnail', '');
-    }
-
-    #[Test]
-    public function removeAlsoDeletesRuntimeDirWhenNonEmpty(): void
-    {
-        $this->filesystem->expects($this->exactly(2))
-            ->method('remove');
-
-        $this->resolver->remove('images/photo.jpg', 'thumbnail', 'rc/abc123');
-    }
-
-    #[Test]
-    public function removeSkipsRuntimeDirWhenEmpty(): void
-    {
-        $this->filesystem->expects($this->once())
-            ->method('remove');
-
-        $this->resolver->remove('images/photo.jpg', 'thumbnail', '');
+        $this->resolver->remove('Ab3xK9_z');
     }
 
     #[Test]
@@ -109,7 +98,7 @@ class WebPathResolverTest extends TestCase
 
         $url = $resolver->resolve('photo.jpg', 'thumb');
 
-        self::assertSame('/media/thumb/photo.jpg', $url);
+        self::assertSame('/media/photo.jpg', $url);
     }
 
     #[Test]
@@ -124,6 +113,22 @@ class WebPathResolverTest extends TestCase
 
         $url = $resolver->resolve('photo.jpg', 'thumb');
 
-        self::assertSame('/media/cache/thumb/photo.jpg', $url);
+        self::assertSame('/media/cache/photo.jpg', $url);
+    }
+
+    #[Test]
+    public function resolveIncludesBaseUrlFromRequestContext(): void
+    {
+        $context = new RequestContext('/app');
+        $resolver = new WebPathResolver(
+            $this->filesystem,
+            $context,
+            '/var/www/public',
+            'media/cache'
+        );
+
+        $url = $resolver->resolve('images/photo.jpg', 'thumbnail');
+
+        self::assertSame('/app/media/cache/images/photo.jpg', $url);
     }
 }

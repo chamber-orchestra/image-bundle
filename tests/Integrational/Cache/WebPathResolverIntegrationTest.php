@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the ChamberOrchestra package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Tests\Integrational\Cache;
 
 use ChamberOrchestra\ImageBundle\Imagine\Cache\Resolver\WebPathResolver;
@@ -19,8 +26,8 @@ class WebPathResolverIntegrationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->webRoot = sys_get_temp_dir().'/image_bundle_web_'.uniqid();
-        mkdir($this->webRoot, 0755, true);
+        $this->webRoot = \sys_get_temp_dir().'/image_bundle_web_'.\uniqid();
+        \mkdir($this->webRoot, 0755, true);
 
         $this->filesystem = new Filesystem();
         $this->resolver = new WebPathResolver(
@@ -49,9 +56,9 @@ class WebPathResolverIntegrationTest extends TestCase
 
         $this->resolver->store($binary, 'images/photo.jpg', 'thumbnail');
 
-        $expectedPath = $this->webRoot.'/media/cache/thumbnail/images/photo.jpg';
+        $expectedPath = $this->webRoot.'/media/cache/images/photo.jpg';
         self::assertFileExists($expectedPath);
-        self::assertSame('fake-image-data', file_get_contents($expectedPath));
+        self::assertSame('fake-image-data', \file_get_contents($expectedPath));
     }
 
     #[Test]
@@ -68,7 +75,7 @@ class WebPathResolverIntegrationTest extends TestCase
     {
         $url = $this->resolver->resolve('images/photo.jpg', 'thumbnail');
 
-        self::assertSame('/media/cache/thumbnail/images/photo.jpg', $url);
+        self::assertSame('/media/cache/images/photo.jpg', $url);
     }
 
     #[Test]
@@ -77,9 +84,9 @@ class WebPathResolverIntegrationTest extends TestCase
         $binary = new Binary('fake-image-data', 'image/jpeg', 'jpeg');
         $this->resolver->store($binary, 'images/photo.jpg', 'thumbnail');
 
-        $this->resolver->remove('images/photo.jpg', 'thumbnail', '');
+        $this->resolver->remove('images');
 
-        $expectedPath = $this->webRoot.'/media/cache/thumbnail/images/photo.jpg';
+        $expectedPath = $this->webRoot.'/media/cache/images/photo.jpg';
         self::assertFileDoesNotExist($expectedPath);
     }
 
@@ -90,7 +97,7 @@ class WebPathResolverIntegrationTest extends TestCase
 
         $this->resolver->store($binary, 'deep/nested/path/photo.jpg', 'thumbnail');
 
-        $expectedPath = $this->webRoot.'/media/cache/thumbnail/deep/nested/path/photo.jpg';
+        $expectedPath = $this->webRoot.'/media/cache/deep/nested/path/photo.jpg';
         self::assertFileExists($expectedPath);
     }
 
@@ -98,13 +105,13 @@ class WebPathResolverIntegrationTest extends TestCase
     public function removeSilentlyIgnoresMissingFile(): void
     {
         // Should not throw when file doesn't exist
-        $this->resolver->remove('nonexistent.jpg', 'thumbnail', '');
+        $this->resolver->remove('nonexistent');
 
         $this->addToAssertionCount(1);
     }
 
     #[Test]
-    public function filterIsolatesFilesFromSameSourcePath(): void
+    public function differentFiltersShareSameCachePath(): void
     {
         $binary = new Binary('thumb-data', 'image/jpeg', 'jpeg');
         $largeBinary = new Binary('large-data', 'image/jpeg', 'jpeg');
@@ -112,12 +119,10 @@ class WebPathResolverIntegrationTest extends TestCase
         $this->resolver->store($binary, 'photo.jpg', 'thumbnail');
         $this->resolver->store($largeBinary, 'photo.jpg', 'large');
 
-        $thumbPath = $this->webRoot.'/media/cache/thumbnail/photo.jpg';
-        $largePath = $this->webRoot.'/media/cache/large/photo.jpg';
-
-        self::assertFileExists($thumbPath);
-        self::assertFileExists($largePath);
-        self::assertSame('thumb-data', file_get_contents($thumbPath));
-        self::assertSame('large-data', file_get_contents($largePath));
+        // Since filter is no longer part of the path, both filters write to the same location
+        // and the second store overwrites the first
+        $cachedPath = $this->webRoot.'/media/cache/photo.jpg';
+        self::assertFileExists($cachedPath);
+        self::assertSame('large-data', \file_get_contents($cachedPath));
     }
 }
