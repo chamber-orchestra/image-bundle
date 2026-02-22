@@ -48,9 +48,8 @@ return static function (ContainerConfigurator $container): void {
         ->autoconfigure()
         ->private()
         ->bind('$globalDefaultImage', '%chamber_orchestra_image.default_image%')
-        ->bind('$cachePath', '%chamber_orchestra_image.cache_path%')
         ->bind('$cachePrefix', '%chamber_orchestra_image.cache_prefix%')
-        ->bind('$mimeTypes', \service('mime_types'))
+        ->bind('$mimeTypes', service('mime_types'))
         ->bind('$lockFactory', service(LockFactory::class)->nullOnInvalid())
     ;
 
@@ -77,11 +76,11 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(ImagineInterface::class, 'chamber_orchestra_image.driver');
 
     $services->load('ChamberOrchestra\\ImageBundle\\', '../../')
-        ->exclude('../../{DependencyInjection,Resources,Exception,EventSubscriber,tests,vendor}')
+        ->exclude('../../{DependencyInjection,Resources,Exception,EventSubscriber,Model,Service/FilterResult.php,Message/ProcessImageMessage.php,tests,vendor}')
     ;
 
     $services->set(BinaryMimeTypeGuesser::class)
-        ->args([\inline_service(FileinfoMimeTypeGuesser::class)])
+        ->args([inline_service(FileinfoMimeTypeGuesser::class)])
     ;
 
     $services->load('ChamberOrchestra\\ImageBundle\\Controller\\', '../../Controller')
