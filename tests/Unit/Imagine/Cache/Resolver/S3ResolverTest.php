@@ -123,7 +123,65 @@ class S3ResolverTest extends TestCase
             'Key' => 'media/scores/moonlight_sonata.webp',
             'Body' => 'processed-image-data',
             'ContentType' => 'image/webp',
+            'CacheControl' => 'public, max-age=31536000',
         ], $this->s3Calls[0]['args'][0]);
+    }
+
+    #[Test]
+    public function storeIncludesAclWhenConfigured(): void
+    {
+        $binary = $this->createMock(BinaryInterface::class);
+        $binary->method('getContent')->willReturn('processed-image-data');
+        $binary->method('getMimeType')->willReturn('image/jpeg');
+
+        $resolver = new S3Resolver(
+            $this->client,
+            'rehearsal-recordings',
+            null,
+            'media',
+            'public, max-age=86400',
+            'public-read',
+        );
+        $resolver->store($binary, 'scores/waltz.jpg', 'thumbnail');
+
+        self::assertCount(1, $this->s3Calls);
+        self::assertSame([
+            'Bucket' => 'rehearsal-recordings',
+            'Key' => 'media/scores/waltz.jpg',
+            'Body' => 'processed-image-data',
+            'ContentType' => 'image/jpeg',
+            'CacheControl' => 'public, max-age=86400',
+            'ACL' => 'public-read',
+        ], $this->s3Calls[0]['args'][0]);
+    }
+
+    #[Test]
+    public function dangerousExtensionsAreReplacedInObjectKey(): void
+    {
+        $this->client->expects($this->once())->method('doesObjectExist')
+            ->with('rehearsal-recordings', 'media/scores/evil.bin')
+            ->willReturn(false);
+
+        $resolver = $this->makeResolver();
+
+        self::assertFalse($resolver->isStored('scores/evil.php', 'thumbnail'));
+    }
+
+    #[Test]
+    public function protocolInPathIsReplacedInObjectKey(): void
+    {
+        $resolver = new S3Resolver(
+            $this->client,
+            'rehearsal-recordings',
+            'https://cdn.orchestra.example.com',
+            'media',
+        );
+
+        $url = $resolver->resolve('http://example.com/scores/photo.jpg', 'thumb');
+
+        // The object key should use '---' instead of '://', but CDN prefix keeps its '://'
+        self::assertStringContainsString('http---example.com', $url);
+        self::assertStringNotContainsString('http://example.com', $url);
     }
 
     #[Test]

@@ -44,6 +44,7 @@ class CwebpPostProcessor extends AbstractPostProcessor implements PostProcessorI
         $this->tempDir = \sys_get_temp_dir();
     }
 
+    #[\Override]
     public static function getIndexName(): string
     {
         return 'cwebp';
@@ -52,6 +53,7 @@ class CwebpPostProcessor extends AbstractPostProcessor implements PostProcessorI
     /**
      * @param array<string, mixed> $options
      */
+    #[\Override]
     public function process(BinaryInterface $binary, array $options): BinaryInterface
     {
         $type = \strtolower($binary->getMimeType());

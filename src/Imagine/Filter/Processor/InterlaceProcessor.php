@@ -19,6 +19,7 @@ class InterlaceProcessor extends AbstractProcessor
      * @param array<string, mixed> $options
      * @param array<string, mixed> $config
      */
+    #[\Override]
     public function apply(ImageInterface $image, array $options = [], array &$config = []): ImageInterface
     {
         $validModes = [

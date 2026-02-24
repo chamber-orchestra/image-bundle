@@ -11,13 +11,13 @@ declare(strict_types=1);
 
 namespace ChamberOrchestra\ImageBundle\Imagine\Filter\Processor;
 
+use ChamberOrchestra\ImageBundle\Enum\ImageFormat;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\ImagineInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class OutputProcessor extends AbstractProcessor
 {
-    private const array FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'tiff', 'bmp', 'avif'];
     private OptionsResolver $resolver;
 
     public function __construct(protected readonly ImagineInterface $imagine)
@@ -34,7 +34,7 @@ class OutputProcessor extends AbstractProcessor
                 return true;
             }
 
-            return \in_array($value, self::FORMATS, true);
+            return \in_array($value, ImageFormat::values(), true);
         });
 
         $resolver->setAllowedValues('quality', function (?int $value) {
@@ -52,6 +52,7 @@ class OutputProcessor extends AbstractProcessor
      * @param array<string, mixed> $options
      * @param array<string, mixed> $config
      */
+    #[\Override]
     public function apply(ImageInterface $image, array $options = [], array &$config = []): ImageInterface
     {
         $options = $this->resolver->resolve($options);

@@ -117,7 +117,7 @@ class ExposedFilterSigningIntegrationTest extends TestCase
         $response = $controller($request);
 
         self::assertInstanceOf(RedirectResponse::class, $response);
-        self::assertSame(301, $response->getStatusCode());
+        self::assertSame(302, $response->getStatusCode());
     }
 
     #[Test]
@@ -157,7 +157,7 @@ class ExposedFilterSigningIntegrationTest extends TestCase
         $response = $controller($request, $hash, $path, 'sonata');
 
         self::assertInstanceOf(RedirectResponse::class, $response);
-        self::assertSame(301, $response->getStatusCode());
+        self::assertSame(302, $response->getStatusCode());
     }
 
     #[Test]

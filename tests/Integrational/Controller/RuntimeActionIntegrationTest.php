@@ -96,7 +96,7 @@ class RuntimeActionIntegrationTest extends TestCase
     }
 
     #[Test]
-    public function validSignedRuntimeUrlReturns301(): void
+    public function validSignedRuntimeUrlReturns302(): void
     {
         $path = 'scores/moonlight.jpg';
         $config = ['fit' => ['width' => 800, 'height' => 600]];
@@ -108,7 +108,7 @@ class RuntimeActionIntegrationTest extends TestCase
         $response = ($this->controller)($request, $hash, $path, 'sonata');
 
         self::assertInstanceOf(RedirectResponse::class, $response);
-        self::assertSame(301, $response->getStatusCode());
+        self::assertSame(302, $response->getStatusCode());
     }
 
     #[Test]

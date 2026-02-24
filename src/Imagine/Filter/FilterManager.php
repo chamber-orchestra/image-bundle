@@ -13,6 +13,8 @@ namespace ChamberOrchestra\ImageBundle\Imagine\Filter;
 
 use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
 use ChamberOrchestra\ImageBundle\Binary\FileBinaryInterface;
+use ChamberOrchestra\ImageBundle\Exception\InvalidArgumentException;
+use ChamberOrchestra\ImageBundle\Exception\RuntimeException;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor\PostProcessorInterface;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\ProcessorInterface;
 use ChamberOrchestra\ImageBundle\Model\Binary;
@@ -53,7 +55,7 @@ class FilterManager
     /**
      * @param array<string, mixed> $config
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function apply(BinaryInterface $binary, array $config): BinaryInterface
     {
@@ -81,7 +83,7 @@ class FilterManager
 
         foreach ($processors as $filter => $options) {
             if (!$this->processorsLocator->has($filter)) {
-                throw new \InvalidArgumentException(\sprintf('Could not find processor for "%s" processor type.', $filter));
+                throw new InvalidArgumentException(\sprintf('Could not find processor for "%s" processor type.', $filter));
             }
 
             $prevImage = $image;
@@ -100,7 +102,7 @@ class FilterManager
     /**
      * @param array<string, mixed> $config
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function applyPostProcessors(BinaryInterface $binary, array $config): BinaryInterface
     {
@@ -109,7 +111,7 @@ class FilterManager
 
         foreach ($postProcessors as $name => $options) {
             if (!$this->postProcessorsLocator->has($name)) {
-                throw new \InvalidArgumentException(\sprintf('Could not find post processor "%s".', $name));
+                throw new InvalidArgumentException(\sprintf('Could not find post processor "%s".', $name));
             }
             $processor = $this->postProcessorsLocator->get($name);
             $binary = $processor->process($binary, $options);
@@ -139,7 +141,7 @@ class FilterManager
         $filteredFormat = $config['format']                  // set by OutputProcessor at runtime
             ?? $output['format']                             // set via YAML filter config
             ?? $binary->getFormat()
-            ?? throw new \LogicException(\sprintf('No output format could be determined for binary with mime type "%s".', $binary->getMimeType()));
+            ?? throw new RuntimeException(\sprintf('No output format could be determined for binary with mime type "%s".', $binary->getMimeType()));
 
         // Strip keys that are bundle-internal and not Imagine driver options
         $imagineOptions = \array_diff_key($output, \array_flip(['format', 'optimize', 'flatten', 'animated']));

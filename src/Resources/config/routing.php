@@ -13,6 +13,7 @@ namespace Symfony\Component\Routing\Loader\Configurator;
 
 use ChamberOrchestra\ImageBundle\Controller\ClientAction;
 use ChamberOrchestra\ImageBundle\Controller\RuntimeAction;
+use ChamberOrchestra\ImageBundle\Enum\ImageFormat;
 
 return static function (RoutingConfigurator $routes): void {
     $routes->add('_chamber_orchestra_image_client', '%chamber_orchestra_image.cache_prefix%/{pathHash}/{optionsHash}/{name}@{density}x.{format}')
@@ -23,7 +24,7 @@ return static function (RoutingConfigurator $routes): void {
             'optionsHash' => '[A-Za-z0-9_-]{16}',
             'name' => '[A-Za-z0-9_-]+',
             'density' => '[1-4]',
-            'format' => 'jpg|jpeg|png|webp|avif',
+            'format' => \implode('|', ImageFormat::values()),
         ])
     ;
 

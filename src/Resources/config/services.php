@@ -15,6 +15,7 @@ use ChamberOrchestra\ImageBundle\Binary\BinaryMimeTypeGuesser;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\Signer;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\FilterConfiguration;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\FilterManager;
+use ChamberOrchestra\ImageBundle\Enum\ImagineDriver;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor\AvifPostProcessor;
 use ChamberOrchestra\ImageBundle\Message\ProcessImageMessageHandler;
 use ChamberOrchestra\ImageBundle\Service\FilterService;
@@ -25,20 +26,12 @@ use ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor\MozJpegPostProcess
 use ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor\PngquantPostProcessor;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor\PostProcessorInterface;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\ProcessorInterface;
-use Imagine\Gd\Imagine as GdImagine;
-use Imagine\Gmagick\Imagine as GmagickImagine;
 use Imagine\Image\ImagineInterface;
-use Imagine\Imagick\Imagine as ImagickImagine;
 use Symfony\Component\Mime\FileinfoMimeTypeGuesser;
 
 return static function (ContainerConfigurator $container): void {
     $container->parameters()
         ->set('chamber_orchestra_image.cache', '')
-        ->set('chamber_orchestra_image.pngquant.binary', '/usr/bin/pngquant')
-        ->set('chamber_orchestra_image.mozjpeg.binary', '/opt/mozjpeg/bin/cjpeg')
-        ->set('chamber_orchestra_image.cwebp.binary', '/usr/local/bin/cwebp')
-        ->set('chamber_orchestra_image.cwebp.lib', '/usr/local/lib')
-        ->set('chamber_orchestra_image.avifenc.binary', '/usr/local/bin/avifenc')
     ;
 
     $services = $container->services();
@@ -62,16 +55,11 @@ return static function (ContainerConfigurator $container): void {
     ;
 
     // Preload drivers
-    if (\extension_loaded('imagick')) {
-        $services->set(ImagickImagine::class);
-    }
-
-    if (\extension_loaded('gd')) {
-        $services->set(GdImagine::class);
-    }
-
-    if (\extension_loaded('gmagick')) {
-        $services->set(GmagickImagine::class);
+    foreach (ImagineDriver::cases() as $driver) {
+        $ext = \strtolower($driver->name);
+        if (\extension_loaded($ext)) {
+            $services->set($driver->value);
+        }
     }
     $services->alias(ImagineInterface::class, 'chamber_orchestra_image.driver');
 

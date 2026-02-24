@@ -45,7 +45,7 @@ class ClientAction
         $this->verifyPath($relativePath, $request);
 
         if ($this->cacheManager->isStored($relativePath, $filter)) {
-            return new RedirectResponse($this->cacheManager->resolve($relativePath, $filter), 301);
+            return new RedirectResponse($this->cacheManager->resolve($relativePath, $filter), 302);
         }
 
         return $this->processAndRespond(

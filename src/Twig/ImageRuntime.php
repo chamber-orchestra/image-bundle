@@ -23,7 +23,15 @@ readonly class ImageRuntime implements RuntimeExtensionInterface
     /**
      * @param array<string, mixed> $config
      */
-    public function fit(string $path, int $width = 0, int $height = 0, array $config = []): string
+    public function imageFilter(string $path, string $filter, array $config = []): string
+    {
+        return $this->applyFilter($path, $config, $filter);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function fit(string $path, int $width = 0, int $height = 0, array $config = [], string $filter = 'default'): string
     {
         if (0 === $width && 0 === $height) {
             throw new \InvalidArgumentException('At least one of width or height must be non-zero for fit().');
@@ -40,13 +48,13 @@ readonly class ImageRuntime implements RuntimeExtensionInterface
             ],
         ], $config);
 
-        return $this->applyFilter($path, $config);
+        return $this->applyFilter($path, $config, $filter);
     }
 
     /**
      * @param array<string, mixed> $config
      */
-    public function fill(string $path, int $width = 0, int $height = 0, array $config = []): string
+    public function fill(string $path, int $width = 0, int $height = 0, array $config = [], string $filter = 'default'): string
     {
         if (0 === $width && 0 === $height) {
             throw new \InvalidArgumentException('At least one of width or height must be non-zero for fill().');
@@ -63,13 +71,13 @@ readonly class ImageRuntime implements RuntimeExtensionInterface
             ],
         ], $config);
 
-        return $this->applyFilter($path, $config);
+        return $this->applyFilter($path, $config, $filter);
     }
 
     /**
      * @param array<string, mixed> $config
      */
-    public function optimize(string $path, int $width = 1200, array $config = []): string
+    public function optimize(string $path, int $width = 1200, array $config = [], string $filter = 'default'): string
     {
         /** @var array<string, mixed> $config */
         $config = \array_replace_recursive([
@@ -82,13 +90,13 @@ readonly class ImageRuntime implements RuntimeExtensionInterface
             ],
         ], $config);
 
-        return $this->applyFilter($path, $config);
+        return $this->applyFilter($path, $config, $filter);
     }
 
     /**
      * @param array<string, mixed> $config
      */
-    private function applyFilter(string $path, array $config = [], string $filter = 'default', ?string $resolver = null): string
+    private function applyFilter(string $path, array $config, string $filter = 'default', ?string $resolver = null): string
     {
         return $this->cacheManager->getBrowserPath($path, $filter, $config, $resolver);
     }

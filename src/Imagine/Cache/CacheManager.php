@@ -49,9 +49,8 @@ class CacheManager
 
         $rcPath = $this->getPath($path, $config, $filter);
 
-        return $this->isStored($rcPath, $filter, $resolver)
-            ? $this->resolve($rcPath, $filter, $resolver)
-            : $this->generateUrl($path, $filter, $config, $resolver);
+        return $this->getResolver($filter, $resolver)->resolveIfStored($rcPath, $filter)
+            ?? $this->generateUrl($path, $filter, $config, $resolver);
     }
 
     /**
@@ -104,6 +103,11 @@ class CacheManager
     public function isStored(string $path, string $filter, ?string $resolver = null): bool
     {
         return $this->getResolver($filter, $resolver)->isStored($path, $filter);
+    }
+
+    public function resolveIfStored(string $path, string $filter, ?string $resolver = null): ?string
+    {
+        return $this->getResolver($filter, $resolver)->resolveIfStored($path, $filter);
     }
 
     /**

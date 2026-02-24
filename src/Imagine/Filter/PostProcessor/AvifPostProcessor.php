@@ -44,6 +44,7 @@ class AvifPostProcessor extends AbstractPostProcessor implements PostProcessorIn
         $this->tempDir = \sys_get_temp_dir();
     }
 
+    #[\Override]
     public static function getIndexName(): string
     {
         return 'avifenc';
@@ -52,6 +53,7 @@ class AvifPostProcessor extends AbstractPostProcessor implements PostProcessorIn
     /**
      * @param array<string, mixed> $options
      */
+    #[\Override]
     public function process(BinaryInterface $binary, array $options): BinaryInterface
     {
         $type = \strtolower($binary->getMimeType());

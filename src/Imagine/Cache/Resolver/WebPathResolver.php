@@ -32,6 +32,7 @@ class WebPathResolver implements ResolverInterface
         $this->cacheRoot = $this->webRoot.'/'.$this->cachePrefix;
     }
 
+    #[\Override]
     public function resolve(string $path, string $filter): string
     {
         $baseUrl = \rtrim($this->requestContext->getBaseUrl(), '/');
@@ -39,11 +40,13 @@ class WebPathResolver implements ResolverInterface
         return $baseUrl.'/'.$this->getFileUrl($path, $filter);
     }
 
+    #[\Override]
     public function isStored(string $path, string $filter): bool
     {
         return \is_file($this->getFilePath($path, $filter));
     }
 
+    #[\Override]
     public function store(BinaryInterface $binary, string $path, string $filter): void
     {
         $this->filesystem->dumpFile(
@@ -52,9 +55,22 @@ class WebPathResolver implements ResolverInterface
         );
     }
 
+    #[\Override]
     public function remove(string $prefix): void
     {
         $this->filesystem->remove($this->cacheRoot.'/'.$prefix);
+    }
+
+    #[\Override]
+    public function resolveIfStored(string $path, string $filter): ?string
+    {
+        if (!\is_file($this->getFilePath($path, $filter))) {
+            return null;
+        }
+
+        $baseUrl = \rtrim($this->requestContext->getBaseUrl(), '/');
+
+        return $baseUrl.'/'.$this->getFileUrl($path, $filter);
     }
 
     protected function getFilePath(string $path, string $filter = ''): string

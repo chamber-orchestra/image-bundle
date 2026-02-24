@@ -19,6 +19,7 @@ class OptimizeProcessor extends FitProcessor
     /**
      * @param array<string, mixed> $options
      */
+    #[\Override]
     protected function getOutputSize(ImageInterface $image, array $options = []): Box
     {
         /*

@@ -19,6 +19,7 @@ class ImageExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
+            new TwigFilter('image_filter', [ImageRuntime::class, 'imageFilter']),
             new TwigFilter('fit', [ImageRuntime::class, 'fit']),
             new TwigFilter('fill', [ImageRuntime::class, 'fill']),
             new TwigFilter('optimize', [ImageRuntime::class, 'optimize']),

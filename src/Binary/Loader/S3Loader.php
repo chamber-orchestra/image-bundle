@@ -25,6 +25,7 @@ class S3Loader extends AbstractLoader implements LoaderInterface
     ) {
     }
 
+    #[\Override]
     public function find(string $path): BinaryInterface
     {
         $tempFile = \sys_get_temp_dir().'/'.\uniqid('co_image_s3_', true);

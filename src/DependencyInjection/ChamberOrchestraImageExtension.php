@@ -98,6 +98,14 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
         $concurrency = $config['concurrency'];
         $container->setParameter('chamber_orchestra_image.concurrency', $concurrency);
 
+        /** @var array{pngquant: string, mozjpeg: string, cwebp: string, cwebp_lib: string, avifenc: string} $binaries */
+        $binaries = $config['binaries'];
+        $container->setParameter('chamber_orchestra_image.pngquant.binary', $binaries['pngquant']);
+        $container->setParameter('chamber_orchestra_image.mozjpeg.binary', $binaries['mozjpeg']);
+        $container->setParameter('chamber_orchestra_image.cwebp.binary', $binaries['cwebp']);
+        $container->setParameter('chamber_orchestra_image.cwebp.lib', $binaries['cwebp_lib']);
+        $container->setParameter('chamber_orchestra_image.avifenc.binary', $binaries['avifenc']);
+
         /** @var array<string, array<string, mixed>> $filters */
         $filters = $config['filters'];
 
@@ -109,8 +117,10 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
 
         foreach ($filters as $name => &$filter) {
             if ($filter['exposed'] ?? false) {
-                if (null === $filter['secret']) {
-                    throw new InvalidConfigurationException(\sprintf('Filter "%s" is exposed and requires an explicit "secret" different from the application secret.', $name));
+                /** @var string|null $secret */
+                $secret = $filter['secret'];
+                if (null === $secret || '' === \trim($secret)) {
+                    throw new InvalidConfigurationException(\sprintf('Filter "%s" is exposed and requires a non-empty "secret" different from the application secret.', $name));
                 }
             }
 
@@ -129,6 +139,8 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
         unset($filter);
 
         $container->setParameter('chamber_orchestra_image.filters', $filters);
+
+        $this->validatePostProcessorBinaries($filters, $binaries);
 
         if (\class_exists(PostRemoveEvent::class)) {
             $container->autowire(FileRemoveSubscriber::class)
@@ -166,6 +178,37 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
                 $definition->addMethodCall('addResolver', [new Reference($cachedId), $name]);
             } else {
                 $definition->addMethodCall('addResolver', [new Reference($innerResolverId), $name]);
+            }
+        }
+    }
+
+    /**
+     * @param array<string, array<string, mixed>>                                                         $filters
+     * @param array{pngquant: string, mozjpeg: string, cwebp: string, cwebp_lib: string, avifenc: string} $binaries
+     */
+    private function validatePostProcessorBinaries(array $filters, array $binaries): void
+    {
+        $binaryMap = [
+            'pngquant' => $binaries['pngquant'],
+            'mozjpeg' => $binaries['mozjpeg'],
+            'cwebp' => $binaries['cwebp'],
+            'avifenc' => $binaries['avifenc'],
+        ];
+
+        $checked = [];
+        foreach ($filters as $filter) {
+            /** @var array<string, mixed> $postProcessors */
+            $postProcessors = $filter['post_processors'] ?? [];
+            foreach (\array_keys($postProcessors) as $ppName) {
+                if (!isset($binaryMap[$ppName]) || isset($checked[$ppName])) {
+                    continue;
+                }
+
+                $checked[$ppName] = true;
+                $path = $binaryMap[$ppName];
+                if (!\is_executable($path)) {
+                    throw new InvalidConfigurationException(\sprintf('Post-processor "%s" binary not found at "%s". Install it or update the path in chamber_orchestra_image.binaries.%s.', $ppName, $path, $ppName));
+                }
             }
         }
     }

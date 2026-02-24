@@ -63,8 +63,6 @@
 
     {# add support of ChamberOrchestra\FileBundle\Model\File #}
     {%- set src = src.uri|default(src) -%}
-    {%- set absolute = app.debug -%}
-
     {%- set url = (src|default('')|fit(width, height)) -%}
     {%- set webp = (src|default('')|fit(width, height, {output: {format: 'webp'}})) -%}
     {%- set avif = (src|default('')|fit(width, height, {output: {format: 'avif'}})) -%}
@@ -75,7 +73,6 @@
     {%- set webp3x = (src|default('')|fit(width, height, {fit: {density: 3}, output: {format: 'webp'}})) -%}
     {%- set avif3x = (src|default('')|fit(width, height, {fit: {density: 3}, output: {format: 'avif'}})) -%}
 
-    {# {%- if absolute -%} #}
     {%- set url = asset(url, 'file') -%}
     {%- set webp = asset(webp, 'file') -%}
     {%- set avif = asset(avif, 'file') -%}
@@ -85,7 +82,6 @@
     {%- set url3x = asset(url3x, 'file') -%}
     {%- set webp3x = asset(webp3x, 'file') -%}
     {%- set avif3x = asset(avif3x, 'file') -%}
-    {# {%- endif -%} #}
 
     {%- set attr = {
         style: '' ~
@@ -110,7 +106,6 @@
 
     {# add support of ChamberOrchestra\FileBundle\Model\File #}
     {%- set src = src.uri|default(src) -%}
-    {%- set absolute = app.debug -%}
 
     {%- set url = (src|default('')|fill(width, height)) -%}
     {%- set webp = (src|default('')|fill(width, height, {output: {format: 'webp'}})) -%}
@@ -122,7 +117,6 @@
     {%- set webp3x = (src|default('')|fill(width, height, {fill: {density: 3}, output: {format: 'webp'}})) -%}
     {%- set avif3x = (src|default('')|fill(width, height, {fill: {density: 3}, output: {format: 'avif'}})) -%}
 
-    {# {%- if absolute -%} #}
     {%- set url = asset(url, 'file') -%}
     {%- set webp = asset(webp, 'file') -%}
     {%- set avif = asset(avif, 'file') -%}
@@ -132,7 +126,6 @@
     {%- set url3x = asset(url3x, 'file') -%}
     {%- set webp3x = asset(webp3x, 'file') -%}
     {%- set avif3x = asset(avif3x, 'file') -%}
-    {# {%- endif -%} #}
 
     {%- set attr = {
         style: '' ~

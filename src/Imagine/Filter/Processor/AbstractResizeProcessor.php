@@ -63,23 +63,7 @@ abstract class AbstractResizeProcessor extends AbstractProcessor
                 throw new RuntimeException('Width and Height can not be 0 simultaneously');
             }
 
-            $height = (float) $value;
-            /** @var float|int|string $rawWidth */
-            $rawWidth = $options['width'];
-            /** @var float|int|string $rawDensity */
-            $rawDensity = $options['density'];
-            $width = (float) $rawWidth;
-            $density = (float) $rawDensity;
-
-            // Prevent memory exhaustion from excessively large dimensions
-            if ($width > 0 && $height > 0) {
-                $pixels = ($width * $density) * ($height * $density);
-                if ($pixels > self::MAX_PIXEL_BUDGET) {
-                    throw new RuntimeException(\sprintf('Requested image dimensions (%dx%d at %.1fx density) exceed the maximum pixel budget of %d.', (int) $width, (int) $height, $density, self::MAX_PIXEL_BUDGET));
-                }
-            }
-
-            return $height;
+            return (float) $value;
         });
 
         $resolver->setNormalizer('alpha', function (Options $options, string|int|float $value): int {
@@ -93,6 +77,7 @@ abstract class AbstractResizeProcessor extends AbstractProcessor
      * @param array<string, mixed> $options
      * @param array<string, mixed> $config
      */
+    #[\Override]
     public function apply(ImageInterface $image, array $options = [], array &$config = []): ImageInterface
     {
         /** @var array<string, mixed> $options */
@@ -100,6 +85,12 @@ abstract class AbstractResizeProcessor extends AbstractProcessor
 
         $outputSize = $this->getOutputSize($image, $options);
         $outputDensity = $this->getOutputDensity($image, $options);
+
+        $pixels = ($outputSize->getWidth() * $outputDensity) * ($outputSize->getHeight() * $outputDensity);
+        if ($pixels > self::MAX_PIXEL_BUDGET) {
+            throw new RuntimeException(\sprintf('Requested image dimensions (%dx%d at %.1fx density) exceed the maximum pixel budget of %d.', $outputSize->getWidth(), $outputSize->getHeight(), $outputDensity, self::MAX_PIXEL_BUDGET));
+        }
+
         $image = $this->doApply($image, $outputSize, $outputDensity, $options);
 
         $scaledSize = $outputSize->scale($outputDensity);
