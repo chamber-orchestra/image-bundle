@@ -13,11 +13,13 @@ namespace ChamberOrchestra\ImageBundle\Binary\Locator;
 
 class FileSystemInsecureLocator extends FileSystemLocator
 {
+    #[\Override]
     public function getName(): string
     {
         return 'filesystem_insecure';
     }
 
+    #[\Override]
     protected function generateAbsolutePath(string $root, string $path): ?string
     {
         if (\str_contains($path, '..'.DIRECTORY_SEPARATOR)

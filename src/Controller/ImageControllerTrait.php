@@ -13,13 +13,14 @@ namespace ChamberOrchestra\ImageBundle\Controller;
 
 use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
 use ChamberOrchestra\ImageBundle\Binary\FileBinaryInterface;
+use ChamberOrchestra\ImageBundle\Exception\ExceptionInterface;
 use ChamberOrchestra\ImageBundle\Exception\NotLoadableException;
-use ChamberOrchestra\ImageBundle\Exception\RuntimeException;
 use ChamberOrchestra\ImageBundle\Service\FilterService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait ImageControllerTrait
@@ -44,11 +45,11 @@ trait ImageControllerTrait
                 return $this->respondWithSourceBinary($result->binary);
             }
 
-            return new RedirectResponse($redirectUrl ?? (string) $result->url, 301);
+            return new RedirectResponse($redirectUrl ?? (string) $result->url, 302);
         } catch (NotLoadableException) {
             return $this->redirectToDefaultOrNotFound($filterService->getDefaultImageUrl($filter), $path);
-        } catch (RuntimeException $e) {
-            throw new \RuntimeException(\sprintf('Unable to create image for path "%s" and filter "%s". Story was "%s"', $path, $filter, $e->getMessage()), 0, $e);
+        } catch (ExceptionInterface $e) {
+            throw new HttpException(500, \sprintf('Unable to create image for path "%s" and filter "%s". Reason: %s', $path, $filter, $e->getMessage()), $e);
         }
     }
 

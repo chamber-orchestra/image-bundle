@@ -29,6 +29,7 @@ class FileSystemLoader extends AbstractLoader implements LoaderInterface
         $this->locator->setOptions(['roots' => $dataRoots]);
     }
 
+    #[\Override]
     public function find(string $path): FileBinary
     {
         $path = $this->locator->locate($path);

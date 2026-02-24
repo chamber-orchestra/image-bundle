@@ -66,11 +66,14 @@ readonly class FilterService
     public function getProcessedImageUrl(string $path, string $filter, array $config, ?string $resolver = null): string
     {
         $cachePath = $this->cacheManager->getPath($path, $config, $filter);
-        if (!$this->cacheManager->isStored($cachePath, $filter, $resolver)) {
+        $url = $this->cacheManager->resolveIfStored($cachePath, $filter, $resolver);
+
+        if (null === $url) {
             $this->cacheManager->store($this->createFilteredBinary($path, $filter, $config), $cachePath, $filter, $resolver);
+            $url = $this->cacheManager->getBrowserPath($path, $filter, $config, $resolver);
         }
 
-        return $this->cacheManager->getBrowserPath($path, $filter, $config, $resolver);
+        return $url;
     }
 
     private function acquireDispatchLock(string $cachePath): bool
@@ -108,7 +111,7 @@ readonly class FilterService
         try {
             return $this->filterManager->applyFilter($binary, $filter, $config);
         } catch (NonExistingFilterException $e) {
-            $this->logger->debug(\sprintf('Could not locate filter "%s" for path "%s". Story was "%s"', $filter, $path, $e->getMessage()));
+            $this->logger->debug(\sprintf('Could not locate filter "%s" for path "%s". Reason: %s', $filter, $path, $e->getMessage()));
 
             throw $e;
         }

@@ -105,7 +105,7 @@ class ClientActionIntegrationTest extends TestCase
     }
 
     #[Test]
-    public function validExposedFilterReturns301WhenCached(): void
+    public function validExposedFilterReturns302WhenCached(): void
     {
         $config = [
             'fit' => ['width' => 800, 'height' => 600, 'density' => 1],
@@ -123,11 +123,11 @@ class ClientActionIntegrationTest extends TestCase
         $response = ($this->controller)($request);
 
         self::assertInstanceOf(RedirectResponse::class, $response);
-        self::assertSame(301, $response->getStatusCode());
+        self::assertSame(302, $response->getStatusCode());
     }
 
     #[Test]
-    public function validExposedFilterProcessesAndReturns301WhenNotCached(): void
+    public function validExposedFilterProcessesAndReturns302WhenNotCached(): void
     {
         $config = [
             'fit' => ['width' => 400, 'height' => 300, 'density' => 1],
@@ -140,7 +140,7 @@ class ClientActionIntegrationTest extends TestCase
         $response = ($this->controller)($request);
 
         self::assertInstanceOf(RedirectResponse::class, $response);
-        self::assertSame(301, $response->getStatusCode());
+        self::assertSame(302, $response->getStatusCode());
     }
 
     #[Test]

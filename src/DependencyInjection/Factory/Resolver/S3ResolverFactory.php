@@ -47,6 +47,8 @@ class S3ResolverFactory extends AbstractResolverFactory implements ResolverFacto
             $config['bucket'],
             $config['uri_prefix'],
             $config['cache_prefix'],
+            $config['cache_control'],
+            $config['acl'],
         ]);
 
         return $this->setTaggedDefinition($name, $resolverDefinition, $container);
@@ -82,6 +84,14 @@ class S3ResolverFactory extends AbstractResolverFactory implements ResolverFacto
                     ->defaultValue('media')
                     ->cannotBeEmpty()
                     ->info('S3 key prefix for cached images.')
+                ->end()
+                ->scalarNode('cache_control')
+                    ->defaultValue('public, max-age=31536000')
+                    ->info('Cache-Control header for stored objects.')
+                ->end()
+                ->scalarNode('acl')
+                    ->defaultNull()
+                    ->info('ACL for stored objects (e.g. "public-read"). Null to omit.')
                 ->end()
             ->end()
         ;

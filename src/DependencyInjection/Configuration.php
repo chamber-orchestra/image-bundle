@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace ChamberOrchestra\ImageBundle\DependencyInjection;
 
 use ChamberOrchestra\ImageBundle\DependencyInjection\Factory\Resolver\ResolverFactoryInterface;
+use ChamberOrchestra\ImageBundle\Enum\ImagineDriver;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -76,10 +77,19 @@ final readonly class Configuration implements ConfigurationInterface
         $node
             ->children()
                 ->scalarNode('driver')->defaultValue('Imagine\Imagick\Imagine')
-                    ->validate()
-                        ->ifTrue(function ($v) {
-                            return !\in_array($v, ['Imagine\Gd\Imagine', 'Imagine\Imagick\Imagine', 'Imagine\Gmagick\Imagine'], true);
+                    ->beforeNormalization()
+                        ->ifString()
+                        ->then(static function (string $v): string {
+                            return match (\strtolower($v)) {
+                                'gd' => ImagineDriver::Gd->value,
+                                'imagick' => ImagineDriver::Imagick->value,
+                                'gmagick' => ImagineDriver::Gmagick->value,
+                                default => $v,
+                            };
                         })
+                    ->end()
+                    ->validate()
+                        ->ifTrue(static fn ($v): bool => !\in_array($v, ImagineDriver::values(), true))
                         ->thenInvalid('Invalid imagine driver specified: %s')
                     ->end()
                 ->end()
@@ -102,6 +112,16 @@ final readonly class Configuration implements ConfigurationInterface
                         ->booleanNode('enabled')->defaultNull()->end()
                         ->scalarNode('service')->defaultValue('cache.app')->end()
                         ->integerNode('lifetime')->defaultValue(3600)->end()
+                    ->end()
+                ->end()
+                ->arrayNode('binaries')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('pngquant')->defaultValue('/usr/bin/pngquant')->end()
+                        ->scalarNode('mozjpeg')->defaultValue('/opt/mozjpeg/bin/cjpeg')->end()
+                        ->scalarNode('cwebp')->defaultValue('/usr/local/bin/cwebp')->end()
+                        ->scalarNode('cwebp_lib')->defaultValue('/usr/local/lib')->end()
+                        ->scalarNode('avifenc')->defaultValue('/usr/local/bin/avifenc')->end()
                     ->end()
                 ->end()
                 ->arrayNode('filters')

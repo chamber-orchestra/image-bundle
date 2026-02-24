@@ -41,6 +41,7 @@ class PngquantPostProcessor extends AbstractPostProcessor implements PostProcess
     /**
      * @param array<string, mixed> $options
      */
+    #[\Override]
     public function process(BinaryInterface $binary, array $options): BinaryInterface
     {
         $type = \strtolower($binary->getMimeType());

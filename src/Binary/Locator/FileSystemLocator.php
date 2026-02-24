@@ -26,6 +26,7 @@ class FileSystemLocator implements LocatorInterface
     /**
      * @param array<string, mixed> $options
      */
+    #[\Override]
     public function setOptions(array $options = []): void
     {
         $resolver = new OptionsResolver();
@@ -43,6 +44,7 @@ class FileSystemLocator implements LocatorInterface
     /**
      * @throws NotLoadableException
      */
+    #[\Override]
     public function locate(string $path): string
     {
         // Reject absolute paths — only relative paths and @root: placeholders are allowed
@@ -61,6 +63,7 @@ class FileSystemLocator implements LocatorInterface
         return $this->sanitizeAbsolutePath($path);
     }
 
+    #[\Override]
     public function getName(): string
     {
         return 'filesystem';

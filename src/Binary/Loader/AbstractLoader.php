@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\Container;
 
 abstract class AbstractLoader implements LoaderInterface
 {
+    #[\Override]
     public function getName(): string
     {
         $shortName = \substr(static::class, \strrpos(static::class, '\\') + 1);

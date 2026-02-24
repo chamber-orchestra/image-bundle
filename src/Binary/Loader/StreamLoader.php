@@ -26,11 +26,14 @@ class StreamLoader extends AbstractLoader implements LoaderInterface
      * @var resource|null
      */
     protected $context;
+    /** @var list<string> */
+    private readonly array $allowedSchemes;
 
     /**
+     * @param list<string>  $allowedSchemes
      * @param resource|null $context
      */
-    public function __construct(string $wrapperPrefix, mixed $context = null)
+    public function __construct(string $wrapperPrefix, mixed $context = null, array $allowedSchemes = ['file', 'data'])
     {
         $this->wrapperPrefix = $wrapperPrefix;
 
@@ -39,11 +42,15 @@ class StreamLoader extends AbstractLoader implements LoaderInterface
         }
 
         $this->context = empty($context) ? null : $context;
+        $this->allowedSchemes = \array_map(\strtolower(...), $allowedSchemes);
     }
 
+    #[\Override]
     public function find(string $path): string
     {
         $name = $this->wrapperPrefix.$path;
+
+        $this->validateScheme($name);
 
         \set_error_handler(static function (int $severity, string $message) use ($name): never {
             throw new NotLoadableException(\sprintf('Source image "%s" could not be loaded: %s', $name, $message));
@@ -62,5 +69,18 @@ class StreamLoader extends AbstractLoader implements LoaderInterface
         }
 
         return $content;
+    }
+
+    private function validateScheme(string $uri): void
+    {
+        $colonPos = \strpos($uri, '://');
+        if (false === $colonPos) {
+            return; // No scheme means a relative/absolute path — allowed
+        }
+
+        $scheme = \strtolower(\substr($uri, 0, $colonPos));
+        if (!\in_array($scheme, $this->allowedSchemes, true)) {
+            throw new NotLoadableException(\sprintf('Stream scheme "%s" is not allowed. Allowed schemes: %s.', $scheme, \implode(', ', $this->allowedSchemes)));
+        }
     }
 }

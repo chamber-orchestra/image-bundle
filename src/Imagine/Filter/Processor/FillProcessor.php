@@ -22,6 +22,7 @@ class FillProcessor extends AbstractResizeProcessor
     /**
      * @param array<string, mixed> $options
      */
+    #[\Override]
     protected function doApply(ImageInterface $image, Box $size, float $density, array $options = []): ImageInterface
     {
         /** @var string $filter */

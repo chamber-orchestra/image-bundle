@@ -26,6 +26,7 @@ class StreamLoaderFactory extends AbstractLoaderFactory
         $definition = new ChildDefinition(StreamLoader::class);
         $definition->replaceArgument(0, $config['wrapper_prefix']);
         $definition->replaceArgument(1, $config['context']);
+        $definition->replaceArgument(2, $config['allowed_schemes']);
 
         return $this->setTaggedDefinition($name, $definition, $container);
     }
@@ -44,6 +45,10 @@ class StreamLoaderFactory extends AbstractLoaderFactory
                 ->end()
                 ->scalarNode('context')
                     ->defaultValue(null)
+                ->end()
+                ->arrayNode('allowed_schemes')
+                    ->scalarPrototype()->end()
+                    ->defaultValue(['file', 'data'])
                 ->end()
             ->end()
         ;

@@ -38,6 +38,7 @@ class MozJpegPostProcessor extends AbstractPostProcessor implements PostProcesso
         $this->options = $merged;
     }
 
+    #[\Override]
     public static function getIndexName(): string
     {
         return 'mozjpeg';
@@ -46,6 +47,7 @@ class MozJpegPostProcessor extends AbstractPostProcessor implements PostProcesso
     /**
      * @param array<string, mixed> $options
      */
+    #[\Override]
     public function process(BinaryInterface $binary, array $options): BinaryInterface
     {
         $type = \strtolower($binary->getMimeType());

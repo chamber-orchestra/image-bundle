@@ -32,12 +32,33 @@ class StreamLoaderTest extends TestCase
     #[Test]
     public function findThrowsNotLoadableExceptionWhenStreamNotFound(): void
     {
-        $loader = new StreamLoader('nonexistent-scheme://');
+        $loader = new StreamLoader('file://');
 
         $this->expectException(NotLoadableException::class);
         $this->expectExceptionMessageMatches('/could not be loaded/i');
 
-        $loader->find('missing-file');
+        $loader->find('/nonexistent/path/missing-file');
+    }
+
+    #[Test]
+    public function findThrowsNotLoadableExceptionForDisallowedScheme(): void
+    {
+        $loader = new StreamLoader('http://');
+
+        $this->expectException(NotLoadableException::class);
+        $this->expectExceptionMessageMatches('/scheme "http" is not allowed/i');
+
+        $loader->find('example.com/image.jpg');
+    }
+
+    #[Test]
+    public function findAllowsCustomSchemes(): void
+    {
+        $loader = new StreamLoader('data://text/plain,', null, ['file', 'data', 'http']);
+
+        $result = $loader->find('custom-test');
+
+        self::assertSame('custom-test', $result);
     }
 
     #[Test]

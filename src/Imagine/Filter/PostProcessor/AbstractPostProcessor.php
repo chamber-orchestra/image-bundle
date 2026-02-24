@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\Container;
 
 abstract class AbstractPostProcessor implements PostProcessorInterface
 {
+    #[\Override]
     public static function getIndexName(): string
     {
         $shortName = \substr(static::class, \strrpos(static::class, '\\') + 1);

@@ -46,4 +46,11 @@ interface ResolverInterface
      * Removes all cached variants stored under the given prefix directory.
      */
     public function remove(string $prefix): void;
+
+    /**
+     * Resolves the URL if the path is stored, null otherwise.
+     *
+     * Combines isStored() + resolve() in a single pass to avoid double lookups.
+     */
+    public function resolveIfStored(string $path, string $filter): ?string;
 }

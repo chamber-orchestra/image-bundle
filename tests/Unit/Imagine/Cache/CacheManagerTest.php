@@ -39,8 +39,7 @@ class CacheManagerTest extends TestCase
     public function getBrowserPathReturnsResolvedUrlWhenStored(): void
     {
         $resolver = $this->createMock(ResolverInterface::class);
-        $resolver->method('isStored')->willReturn(true);
-        $resolver->method('resolve')->willReturn('/media/cache/thumbnail/photo.jpg');
+        $resolver->method('resolveIfStored')->willReturn('/media/cache/thumbnail/photo.jpg');
 
         $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
         $this->signer->method('sign')->willReturn('abcdefgh/12345678');
@@ -57,7 +56,7 @@ class CacheManagerTest extends TestCase
     public function getBrowserPathGeneratesUrlWhenNotStored(): void
     {
         $resolver = $this->createMock(ResolverInterface::class);
-        $resolver->method('isStored')->willReturn(false);
+        $resolver->method('resolveIfStored')->willReturn(null);
 
         $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
         $this->router->method('generate')->willReturn('/_media/cache/resolve/thumbnail/photo.jpg');
@@ -74,7 +73,7 @@ class CacheManagerTest extends TestCase
     public function getBrowserPathStripsLeadingSlashFromPath(): void
     {
         $resolver = $this->createMock(ResolverInterface::class);
-        $resolver->method('isStored')->willReturn(false);
+        $resolver->method('resolveIfStored')->willReturn(null);
 
         $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
         $this->router->expects($this->once())
@@ -91,7 +90,7 @@ class CacheManagerTest extends TestCase
     public function getBrowserPathWithRuntimeConfigGeneratesRuntimeUrl(): void
     {
         $resolver = $this->createMock(ResolverInterface::class);
-        $resolver->method('isStored')->willReturn(false);
+        $resolver->method('resolveIfStored')->willReturn(null);
 
         $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
         $this->signer->method('sign')->willReturn('rc/abc/def12345678901234');

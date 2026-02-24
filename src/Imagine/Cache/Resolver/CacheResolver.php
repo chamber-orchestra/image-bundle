@@ -38,6 +38,7 @@ class CacheResolver implements ResolverInterface
     /**
      * @throws InvalidArgumentException
      */
+    #[\Override]
     public function isStored(string $path, string $filter): bool
     {
         return $this->cache->hasItem($this->generateCacheKey($path, $filter)) || $this->resolver->isStored($path, $filter);
@@ -46,6 +47,7 @@ class CacheResolver implements ResolverInterface
     /**
      * @throws InvalidArgumentException
      */
+    #[\Override]
     public function resolve(string $path, string $filter): string
     {
         $key = $this->generateCacheKey($path, $filter);
@@ -63,6 +65,7 @@ class CacheResolver implements ResolverInterface
         return $resolved;
     }
 
+    #[\Override]
     public function store(BinaryInterface $binary, string $path, string $filter): void
     {
         $this->resolver->store($binary, $path, $filter);
@@ -71,6 +74,7 @@ class CacheResolver implements ResolverInterface
     /**
      * @throws InvalidArgumentException
      */
+    #[\Override]
     public function remove(string $prefix): void
     {
         $this->resolver->remove($prefix);
@@ -86,6 +90,30 @@ class CacheResolver implements ResolverInterface
             }
             $this->cache->deleteItem($indexKey);
         }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    #[\Override]
+    public function resolveIfStored(string $path, string $filter): ?string
+    {
+        $key = $this->generateCacheKey($path, $filter);
+        $item = $this->cache->getItem($key);
+
+        if ($item->isHit()) {
+            /** @var string $resolved */
+            $resolved = $item->get();
+
+            return $resolved;
+        }
+
+        $resolved = $this->resolver->resolveIfStored($path, $filter);
+        if (null !== $resolved) {
+            $this->saveToCache($key, $this->extractPrefix($path), $resolved);
+        }
+
+        return $resolved;
     }
 
     /**
