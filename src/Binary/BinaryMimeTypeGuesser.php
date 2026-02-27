@@ -13,9 +13,8 @@ namespace ChamberOrchestra\ImageBundle\Binary;
 
 use ChamberOrchestra\ImageBundle\Exception\RuntimeException;
 use Symfony\Component\Mime\FileinfoMimeTypeGuesser;
-use Symfony\Component\Mime\MimeTypeGuesserInterface;
 
-readonly class BinaryMimeTypeGuesser implements MimeTypeGuesserInterface
+readonly class BinaryMimeTypeGuesser
 {
     public function __construct(private FileinfoMimeTypeGuesser $guesser)
     {

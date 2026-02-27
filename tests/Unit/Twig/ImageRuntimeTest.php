@@ -116,6 +116,23 @@ class ImageRuntimeTest extends TestCase
     }
 
     #[Test]
+    public function fillPropagatesCustomDensityIntoProcessor(): void
+    {
+        $this->cacheManager
+            ->expects($this->once())
+            ->method('getBrowserPath')
+            ->with(
+                'photo.jpg',
+                'default',
+                $this->callback(fn ($c) => 2 === $c['processors']['fill']['density']),
+                null
+            )
+            ->willReturn('/url');
+
+        $this->runtime->fill('photo.jpg', 400, 300, ['fill' => ['density' => 2]]);
+    }
+
+    #[Test]
     public function optimizeUsesDefaultWidth1200WithDensity2(): void
     {
         $this->cacheManager

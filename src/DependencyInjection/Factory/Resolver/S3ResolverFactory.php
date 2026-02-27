@@ -64,8 +64,7 @@ class S3ResolverFactory extends AbstractResolverFactory implements ResolverFacto
         $builder
             ->children()
                 ->scalarNode('bucket')
-                    ->isRequired()
-                    ->cannotBeEmpty()
+                    ->defaultNull()
                     ->info('S3 bucket name for storing cached images.')
                 ->end()
                 ->scalarNode('region')

@@ -47,9 +47,9 @@ class FileSystemLocator implements LocatorInterface
     #[\Override]
     public function locate(string $path): string
     {
-        // Reject absolute paths — only relative paths and @root: placeholders are allowed
+        // Strip leading slash — file-bundle stores paths with a leading /
         if ('' !== $path && ('/' === $path[0] || '\\' === $path[0])) {
-            throw new NotLoadableException(\sprintf('Source image path must be relative, got "%s"', $path));
+            $path = \ltrim($path, '/\\');
         }
 
         if (null !== $absolute = $this->locateUsingRootPlaceholder($path)) {

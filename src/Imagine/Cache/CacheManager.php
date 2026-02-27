@@ -156,8 +156,8 @@ class CacheManager
     private function extractDensity(array $config): int
     {
         foreach ($config as $key => $value) {
-            if ('output' !== $key && \is_array($value) && \is_int($value['density'] ?? null)) {
-                return $value['density'];
+            if ('output' !== $key && \is_array($value) && \is_numeric($value['density'] ?? null)) {
+                return (int) $value['density'];
             }
         }
 

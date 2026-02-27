@@ -37,14 +37,17 @@ readonly class ImageRuntime implements RuntimeExtensionInterface
             throw new \InvalidArgumentException('At least one of width or height must be non-zero for fit().');
         }
 
+        /** @var array<string, mixed> $fitOptions */
+        $fitOptions = \is_array($config['fit'] ?? null) ? $config['fit'] : [];
+
         /** @var array<string, mixed> $config */
         $config = \array_replace_recursive([
             'processors' => [
-                'fit' => [
+                'fit' => \array_replace([
                     'width' => $width,
                     'height' => $height,
                     'density' => 1,
-                ],
+                ], $fitOptions),
             ],
         ], $config);
 
@@ -60,14 +63,17 @@ readonly class ImageRuntime implements RuntimeExtensionInterface
             throw new \InvalidArgumentException('At least one of width or height must be non-zero for fill().');
         }
 
+        /** @var array<string, mixed> $fillOptions */
+        $fillOptions = \is_array($config['fill'] ?? null) ? $config['fill'] : [];
+
         /** @var array<string, mixed> $config */
         $config = \array_replace_recursive([
             'processors' => [
-                'fill' => [
+                'fill' => \array_replace([
                     'width' => $width,
                     'height' => $height,
                     'density' => 1,
-                ],
+                ], $fillOptions),
             ],
         ], $config);
 
@@ -79,14 +85,17 @@ readonly class ImageRuntime implements RuntimeExtensionInterface
      */
     public function optimize(string $path, int $width = 1200, array $config = [], string $filter = 'default'): string
     {
+        /** @var array<string, mixed> $optimizeOptions */
+        $optimizeOptions = \is_array($config['optimize'] ?? null) ? $config['optimize'] : [];
+
         /** @var array<string, mixed> $config */
         $config = \array_replace_recursive([
             'processors' => [
-                'optimize' => [
+                'optimize' => \array_replace([
                     'width' => $width,
                     'height' => 0,
                     'density' => 2,
-                ],
+                ], $optimizeOptions),
             ],
         ], $config);
 

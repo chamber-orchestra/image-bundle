@@ -88,8 +88,8 @@ class AvifPostProcessorTest extends TestCase
 
         $processor = new AvifPostProcessor('/nonexistent/avifenc');
 
-        $this->expectException(\Throwable::class);
-        $processor->process($binary, []);
+        $result = $processor->process($binary, []);
+        self::assertSame($binary, $result);
     }
 
     #[Test]
@@ -101,7 +101,7 @@ class AvifPostProcessorTest extends TestCase
 
         $processor = new AvifPostProcessor('/nonexistent/avifenc');
 
-        $this->expectException(\Throwable::class);
-        $processor->process($binary, []);
+        $result = $processor->process($binary, []);
+        self::assertSame($binary, $result);
     }
 }

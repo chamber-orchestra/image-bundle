@@ -83,9 +83,8 @@ class MozJpegPostProcessorTest extends TestCase
 
         $processor = new MozJpegPostProcessor('/nonexistent/cjpeg');
 
-        // Should attempt to process (not skip) and throw since binary doesn't exist
-        $this->expectException(\Throwable::class);
-        $processor->process($binary, []);
+        $result = $processor->process($binary, []);
+        self::assertSame($binary, $result);
     }
 
     #[Test]
@@ -97,8 +96,7 @@ class MozJpegPostProcessorTest extends TestCase
 
         $processor = new MozJpegPostProcessor('/nonexistent/cjpeg');
 
-        // Should attempt to process (not skip) and throw since binary doesn't exist
-        $this->expectException(\Throwable::class);
-        $processor->process($binary, []);
+        $result = $processor->process($binary, []);
+        self::assertSame($binary, $result);
     }
 }

@@ -50,6 +50,10 @@ class MozJpegPostProcessor extends AbstractPostProcessor implements PostProcesso
     #[\Override]
     public function process(BinaryInterface $binary, array $options): BinaryInterface
     {
+        if (!\is_executable($this->bin)) {
+            return $binary;
+        }
+
         $type = \strtolower($binary->getMimeType());
         if (!\in_array($type, ['image/jpeg', 'image/jpg'], true)) {
             return $binary;
