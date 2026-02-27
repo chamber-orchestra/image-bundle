@@ -56,6 +56,10 @@ class AvifPostProcessor extends AbstractPostProcessor implements PostProcessorIn
     #[\Override]
     public function process(BinaryInterface $binary, array $options): BinaryInterface
     {
+        if (!\is_executable($this->bin)) {
+            return $binary;
+        }
+
         $type = \strtolower($binary->getMimeType());
         $supported = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/tiff'];
         if (!\in_array($type, $supported, true)) {

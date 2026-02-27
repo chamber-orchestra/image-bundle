@@ -236,6 +236,20 @@ class CacheManagerTest extends TestCase
         self::assertSame('abc/def12345678901234/photo@2x.webp', $result);
     }
 
+    #[Test]
+    public function getPathExtractsDensityFromStringValue(): void
+    {
+        // When config comes from HTTP query params, all values are strings
+        $this->signer->method('sign')->willReturn('abc/def12345678901234');
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
+
+        $manager = $this->makeManager();
+
+        $result = $manager->getPath('photo.jpg', ['fill' => ['density' => '3'], 'output' => ['format' => 'avif']], 'thumbnail');
+
+        self::assertSame('abc/def12345678901234/photo@3x.avif', $result);
+    }
+
     private function makeManager(): CacheManager
     {
         return new CacheManager($this->filterConfig, $this->router, $this->signer);

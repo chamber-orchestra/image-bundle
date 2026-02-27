@@ -66,6 +66,17 @@ class FileSystemLocatorIntegrationTest extends TestCase
     }
 
     #[Test]
+    public function locateStripsLeadingSlashFromPath(): void
+    {
+        // file-bundle stores paths with a leading slash e.g. /uploads/photo.jpg
+        \file_put_contents($this->rootDir.'/photo.jpg', 'image-data');
+
+        $result = $this->locator->locate('/photo.jpg');
+
+        self::assertSame(\realpath($this->rootDir.'/photo.jpg'), $result);
+    }
+
+    #[Test]
     public function locateThrowsForPathOutsideRoot(): void
     {
         // Create a file in /tmp directly (outside the root)

@@ -44,6 +44,10 @@ class PngquantPostProcessor extends AbstractPostProcessor implements PostProcess
     #[\Override]
     public function process(BinaryInterface $binary, array $options): BinaryInterface
     {
+        if (!\is_executable($this->bin)) {
+            return $binary;
+        }
+
         $type = \strtolower($binary->getMimeType());
         if (!\in_array($type, ['image/png'], true)) {
             return $binary;

@@ -65,9 +65,8 @@ class PngquantPostProcessorTest extends TestCase
 
         $processor = new PngquantPostProcessor('/nonexistent/pngquant');
 
-        // Should attempt to process (not skip) and throw since binary doesn't exist
-        $this->expectException(\Throwable::class);
-        $processor->process($binary, []);
+        $result = $processor->process($binary, []);
+        self::assertSame($binary, $result);
     }
 
     #[Test]

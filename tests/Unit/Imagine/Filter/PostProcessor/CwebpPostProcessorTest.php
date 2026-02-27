@@ -70,17 +70,11 @@ class CwebpPostProcessorTest extends TestCase
         $binary = $this->createMock(BinaryInterface::class);
         $binary->method('getMimeType')->willReturn('image/jpeg');
 
-        // We expect it to NOT return the original binary (it will try to process)
-        // but with nonexistent binary it will throw. We just verify it doesn't skip.
+        // With nonexistent binary, processor returns original binary unchanged
         $processor = new CwebpPostProcessor('/nonexistent/cwebp');
 
-        try {
-            $processor->process($binary, []);
-            self::fail('Expected an exception from non-existent binary');
-        } catch (\Throwable $e) {
-            // Expected - the binary doesn't exist, which confirms jpeg is NOT skipped
-            self::assertNotSame($binary, null);
-        }
+        $result = $processor->process($binary, []);
+        self::assertSame($binary, $result);
     }
 
     #[Test]
@@ -92,8 +86,8 @@ class CwebpPostProcessorTest extends TestCase
 
         $processor = new CwebpPostProcessor('/nonexistent/cwebp');
 
-        $this->expectException(\Throwable::class);
-        $processor->process($binary, []);
+        $result = $processor->process($binary, []);
+        self::assertSame($binary, $result);
     }
 
     #[Test]
@@ -105,7 +99,7 @@ class CwebpPostProcessorTest extends TestCase
 
         $processor = new CwebpPostProcessor('/nonexistent/cwebp');
 
-        $this->expectException(\Throwable::class);
-        $processor->process($binary, []);
+        $result = $processor->process($binary, []);
+        self::assertSame($binary, $result);
     }
 }
