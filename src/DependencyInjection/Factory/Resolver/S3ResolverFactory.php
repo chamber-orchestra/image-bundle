@@ -38,6 +38,19 @@ class S3ResolverFactory extends AbstractResolverFactory implements ResolverFacto
             $clientArgs['endpoint'] = $config['endpoint'];
         }
 
+        if ($config['path_style'] ?? false) {
+            $clientArgs['use_path_style_endpoint'] = true;
+        }
+
+        if (isset($config['credentials'])) {
+            /** @var array{key: string, secret: string} $credentials */
+            $credentials = $config['credentials'];
+            $clientArgs['credentials'] = [
+                'key' => $credentials['key'],
+                'secret' => $credentials['secret'],
+            ];
+        }
+
         $clientDefinition = new Definition(S3Client::class, [$clientArgs]);
         $clientId = \sprintf('chamber_orchestra_image.cache.resolver.%s.client', $name);
         $container->setDefinition($clientId, $clientDefinition);
@@ -91,6 +104,17 @@ class S3ResolverFactory extends AbstractResolverFactory implements ResolverFacto
                 ->scalarNode('acl')
                     ->defaultNull()
                     ->info('ACL for stored objects (e.g. "public-read"). Null to omit.')
+                ->end()
+                ->booleanNode('path_style')
+                    ->defaultFalse()
+                    ->info('Use path-style addressing (required for LocalStack/MinIO).')
+                ->end()
+                ->arrayNode('credentials')
+                    ->children()
+                        ->scalarNode('key')->isRequired()->end()
+                        ->scalarNode('secret')->isRequired()->end()
+                    ->end()
+                    ->info('Explicit AWS credentials. Omit to use default credential chain.')
                 ->end()
             ->end()
         ;

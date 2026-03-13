@@ -48,14 +48,19 @@ Built for PHP 8.5 and Symfony 8. A modern, type-safe alternative to LiipImagineB
 - **Runtime image URLs** — nginx-cacheable `GET /media/{pathHash}/{optionsHash}/{name}.{format}` endpoint with HMAC-validated parameters, usable from any client with the shared secret
 - **Loaders**: `filesystem` (with path-traversal protection), `stream` (any PHP stream wrapper), `s3` (S3-compatible storage)
 - **Resolvers**: `web_path` (filesystem + public URL), `s3` (S3/MinIO/DigitalOcean Spaces), `cache` (PSR-6 decorator)
-- **Twig filters**: `image_filter`, `fit`, `fill`, `optimize`, `avif`
+- **Twig filters**: `image_filter`, `fit`, `fill`, `optimize`
 - **Twig macros**: responsive `<picture>` elements with AVIF/WebP/fallback srcsets and CSS background helpers
 - **Retina/HiDPI** — built-in pixel density multiplier for 2x and 3x output
 - **Async processing** — offload image processing to Symfony Messenger workers (requires `symfony/messenger`)
 - **Concurrency control** — limit parallel processing workers via distributed locks (requires `symfony/lock`)
 - **Content-addressed caching** — URL changes when the image or options change; safe for `Cache-Control: immutable`
 - **Auto cache invalidation** via event subscriber (integrates with `chamber-orchestra/file-bundle`)
-- **Imagick, GD, Gmagick** drivers
+- **Imagick, GD, Gmagick** drivers — configurable via short aliases (`gd`, `imagick`, `gmagick`) or FQCN
+- **Configurable binary paths** — set paths for `pngquant`, `cjpeg`, `cwebp`, `avifenc` in bundle config
+- **SSRF protection** — `StreamLoader` validates URI schemes against an allowlist (default: `file`, `data`)
+- **DoS protection** — pixel budget enforced on final output dimensions to prevent memory exhaustion
+- **S3 hardening** — `Cache-Control` headers, optional ACL, dangerous extension blocking on upload
+- **Cache optimisation** — `resolveIfStored()` combines existence check + URL resolution in a single pass
 - **Client SDKs** — TypeScript, React, Next.js, Vue, Swift, and Kotlin signing implementations included
 
 ---
@@ -110,9 +115,10 @@ _chamber_orchestra_image:
 # config/packages/chamber_orchestra_image.yaml
 chamber_orchestra_image:
 
-    # Imagine driver class
-    # Allowed: Imagine\Imagick\Imagine | Imagine\Gd\Imagine | Imagine\Gmagick\Imagine
-    driver: Imagine\Imagick\Imagine   # default
+    # Imagine driver — short alias or FQCN
+    # Aliases: gd | imagick | gmagick
+    # FQCN:   Imagine\Imagick\Imagine | Imagine\Gd\Imagine | Imagine\Gmagick\Imagine
+    driver: imagick                   # default (resolves to Imagine\Imagick\Imagine)
 
     # Default resolver name (must match a key under "resolvers")
     resolver: default                 # default
@@ -136,6 +142,14 @@ chamber_orchestra_image:
     # Max concurrent image processing workers (0 = unlimited, requires symfony/lock)
     concurrency: 0                    # default
 
+    # Paths to external CLI binaries used by post-processors
+    binaries:
+        pngquant: /usr/bin/pngquant           # default
+        mozjpeg: /opt/mozjpeg/bin/cjpeg       # default
+        cwebp: /usr/local/bin/cwebp           # default
+        cwebp_lib: /usr/local/lib             # default — LD_LIBRARY_PATH for cwebp
+        avifenc: /usr/local/bin/avifenc       # default
+
     # PSR-6 cache layer for resolver lookups (wraps resolvers with CacheResolver)
     cache:
         enabled: ~                    # default: null (auto: true in prod, false in debug)
@@ -157,6 +171,10 @@ chamber_orchestra_image:
             # --- stream loader options ---
             # wrapper_prefix: ''      # prepended to path before file_get_contents()
             # context: ~              # optional PHP stream context service
+            # allowed_schemes:        # SSRF protection — URI schemes the loader may access
+            #     - file              # default
+            #     - data              # default
+            #     - https             # add explicitly to allow remote fetching
 
             # --- s3 loader options (requires chamber-orchestra/file-bundle) ---
             # storage: default        # name of the file-bundle storage
@@ -177,6 +195,8 @@ chamber_orchestra_image:
             # endpoint: ~             # optional: https://minio.example.com
             # uri_prefix: ~           # optional: https://cdn.example.com
             # cache_prefix: media     # default — S3 key prefix
+            # cache_control: 'public, max-age=31536000'  # default — Cache-Control header on uploaded objects
+            # acl: ~                  # optional: S3 ACL (e.g. 'public-read')
 
             # --- custom resolver options ---
             # service: App\MyResolver # service ID implementing ResolverInterface
@@ -184,7 +204,7 @@ chamber_orchestra_image:
     # Named filter pipelines
     filters:
 
-        # The "default" filter is used by Twig convenience filters: fit(), fill(), optimize(), avif()
+        # The "default" filter is used by Twig convenience filters: fit(), fill(), optimize()
         # It must be defined if you use those filters
         default:
             output:
@@ -298,7 +318,7 @@ Most defaults are sensible out of the box. A minimal configuration only needs a 
 # config/packages/chamber_orchestra_image.yaml
 chamber_orchestra_image:
     filters:
-        # Required for Twig fit(), fill(), optimize(), avif() filters.
+        # Required for Twig fit(), fill(), optimize() filters.
         # Includes a balanced set of post-processors for good compression and quality.
         default:
             output:
@@ -351,16 +371,14 @@ This registers a filesystem loader from `%kernel.project_dir%/public`, a `web_pa
 <img src="{{ '/scores/symphony_no_5.jpg' | optimize }}">
 <img src="{{ '/scores/symphony_no_5.jpg' | optimize(800) }}">
 
-{# Convert to AVIF — scales to width 1200 at 2x density, outputs AVIF format #}
-<img src="{{ '/scores/symphony_no_5.jpg' | avif }}">
-<img src="{{ '/scores/symphony_no_5.jpg' | avif(800) }}">
-<img src="{{ '/scores/symphony_no_5.jpg' | avif(800, {output: {quality: 50}}) }}">
-
 {# Runtime filter — options merged at request time (HMAC-signed URL) #}
 <img src="{{ '/scores/moonlight_sonata.jpg' | image_filter('default', {'fit': {'width': 600, 'height': 400}}) }}">
+
+{# Use a specific named filter instead of 'default' #}
+<img src="{{ '/scores/moonlight_sonata.jpg' | fit(800, 600, {}, 'score_thumbnail') }}">
 ```
 
-> `fit`, `fill`, `optimize`, and `avif` dispatch through the runtime filter mechanism — no named filter configuration needed.
+> `fit`, `fill`, and `optimize` dispatch through the runtime filter mechanism — no named filter configuration needed. Each accepts an optional `filter` argument (default: `'default'`) to target a specific named filter.
 
 ### Twig macros
 
@@ -661,11 +679,14 @@ loaders:
 
 Loads images from any PHP stream wrapper (HTTP, FTP, custom wrappers, etc.). The `wrapper_prefix` is prepended to the image path before calling `file_get_contents()`. An optional stream context can be provided for authentication or SSL options.
 
+**SSRF protection:** By default the stream loader only allows `file` and `data` schemes. To allow remote fetching, add the desired schemes explicitly via `allowed_schemes`:
+
 ```yaml
 loaders:
     remote:
         type: stream
         wrapper_prefix: 'https://cdn.example.com/uploads/'
+        allowed_schemes: [file, data, https]    # default: [file, data]
 ```
 
 ```php
@@ -1615,6 +1636,7 @@ Because image URLs are content-addressed (the hash changes when the source or op
 - **Custom post-processors**: implement `PostProcessorInterface`, auto-tagged `chamber_orchestra_image.filter.post_processor`
 - **Custom loaders**: implement `LoaderFactoryInterface`, register in your bundle's `build()` method
 - **Custom resolvers**: implement `ResolverFactoryInterface`, register in your bundle's `build()` method, or use `type: custom` with a service ID
+- **Enums**: `ImageFormat` (png, jpg, webp, avif, ...) and `ImagineDriver` (Gd, Imagick, Gmagick) are available for type-safe configuration
 
 ---
 
