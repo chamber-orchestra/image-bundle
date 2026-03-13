@@ -13,8 +13,8 @@
 {%- endmacro -%}
 
 {%- macro fit(src, width, height, attr, picture_attr = {}) -%}
-    {# add support of ChamberOrchestra\FileBundle\Model\File #}
-    {%- set src = src.uri|default(src) -%}
+    {# add support of ChamberOrchestra\FileBundle\Model\File — use relativePath for image filters, falls back to uri #}
+    {%- set src = src.relativePath|default(src.uri|default(src)) -%}
     {%- set attr = attr|default({})|merge({width: attr.width|default(width), height: attr.height|default(height), style: 'height: auto', loading: 'lazy', decoding: 'async'}) -%}
     <picture {{ _self.attributes(picture_attr) -}}>
             <source {#
@@ -36,8 +36,8 @@
 {%- endmacro -%}
 
 {%- macro fill(src, width, height, attr, picture_attr = {}) -%}
-    {# add support of ChamberOrchestra\FileBundle\Model\File #}
-    {%- set src = src.uri|default(src) -%}
+    {# add support of ChamberOrchestra\FileBundle\Model\File — use relativePath for image filters, falls back to uri #}
+    {%- set src = src.relativePath|default(src.uri|default(src)) -%}
     {%- set attr = attr|default({})|merge({width: attr.width|default(width), height: attr.height|default(height), style: 'height: auto', loading: 'lazy', decoding: 'async'}) -%}
 
     <picture {{ _self.attributes(picture_attr) -}}>
@@ -61,8 +61,8 @@
 
 {%- macro css_fit(src, width, height, use2x = true) -%}
 
-    {# add support of ChamberOrchestra\FileBundle\Model\File #}
-    {%- set src = src.uri|default(src) -%}
+    {# add support of ChamberOrchestra\FileBundle\Model\File — use relativePath for image filters, falls back to uri #}
+    {%- set src = src.relativePath|default(src.uri|default(src)) -%}
     {%- set url = (src|default('')|fit(width, height)) -%}
     {%- set webp = (src|default('')|fit(width, height, {output: {format: 'webp'}})) -%}
     {%- set avif = (src|default('')|fit(width, height, {output: {format: 'avif'}})) -%}
@@ -104,8 +104,8 @@
 
 {%- macro css_fill(src, width, height, use2x = true) -%}
 
-    {# add support of ChamberOrchestra\FileBundle\Model\File #}
-    {%- set src = src.uri|default(src) -%}
+    {# add support of ChamberOrchestra\FileBundle\Model\File — use relativePath for image filters, falls back to uri #}
+    {%- set src = src.relativePath|default(src.uri|default(src)) -%}
 
     {%- set url = (src|default('')|fill(width, height)) -%}
     {%- set webp = (src|default('')|fill(width, height, {output: {format: 'webp'}})) -%}
