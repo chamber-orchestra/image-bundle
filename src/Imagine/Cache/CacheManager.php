@@ -94,8 +94,10 @@ class CacheManager
             $params['resolver'] = $resolver;
         }
 
-        $params['processors'] = $config;
-        $params['hash'] = $this->signer->sign($path, $this->getFilterSecret($filter), $config);
+        /** @var array<string, mixed> $processors */
+        $processors = $config['processors'] ?? $config;
+        $params['processors'] = $processors;
+        $params['hash'] = $this->signer->sign($path, $this->getFilterSecret($filter), $processors);
 
         return $this->router->generate('_chamber_orchestra_image', $params, $referenceType);
     }
@@ -155,8 +157,11 @@ class CacheManager
      */
     private function extractDensity(array $config): int
     {
-        foreach ($config as $key => $value) {
-            if ('output' !== $key && \is_array($value) && \is_numeric($value['density'] ?? null)) {
+        /** @var array<string, mixed> $processors */
+        $processors = $config['processors'] ?? $config;
+
+        foreach ($processors as $value) {
+            if (\is_array($value) && \is_numeric($value['density'] ?? null)) {
                 return (int) $value['density'];
             }
         }
