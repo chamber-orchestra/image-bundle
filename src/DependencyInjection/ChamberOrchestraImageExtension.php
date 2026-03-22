@@ -140,7 +140,7 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
 
         $container->setParameter('chamber_orchestra_image.filters', $filters);
 
-        $this->validatePostProcessorBinaries($filters, $binaries);
+        $this->validatePostProcessorBinaries($filters, $binaries, $container);
 
         if (\class_exists(PostRemoveEvent::class)) {
             $container->autowire(FileRemoveSubscriber::class)
@@ -186,7 +186,7 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
      * @param array<string, array<string, mixed>>                                                         $filters
      * @param array{pngquant: string, mozjpeg: string, cwebp: string, cwebp_lib: string, avifenc: string} $binaries
      */
-    private function validatePostProcessorBinaries(array $filters, array $binaries): void
+    private function validatePostProcessorBinaries(array $filters, array $binaries, ContainerBuilder $container): void
     {
         $binaryMap = [
             'pngquant' => $binaries['pngquant'],
@@ -205,12 +205,37 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
                 }
 
                 $checked[$ppName] = true;
-                $path = $binaryMap[$ppName];
+                $path = $this->resolveBinaryPath($binaryMap[$ppName], $container);
+
+                if (null === $path) {
+                    continue;
+                }
+
                 if (!\is_executable($path)) {
                     throw new InvalidConfigurationException(\sprintf('Post-processor "%s" binary not found at "%s". Install it or update the path in chamber_orchestra_image.binaries.%s.', $ppName, $path, $ppName));
                 }
             }
         }
+    }
+
+    /**
+     * Resolves env placeholders to their actual values for compile-time validation.
+     * Returns null when the env var is not available at compile time (skips validation).
+     */
+    private function resolveBinaryPath(string $value, ContainerBuilder $container): ?string
+    {
+        /** @var array<string, list<string>> $usedEnvs */
+        $usedEnvs = [];
+        $container->resolveEnvPlaceholders($value, '%s', $usedEnvs);
+
+        if ([] === $usedEnvs) {
+            return $value;
+        }
+
+        $envName = (string) \array_key_first($usedEnvs);
+        $resolved = $_ENV[$envName] ?? $_SERVER[$envName] ?? \getenv($envName);
+
+        return false !== $resolved && '' !== (string) $resolved ? (string) $resolved : null;
     }
 
     /**
