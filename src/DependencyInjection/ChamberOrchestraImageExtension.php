@@ -224,18 +224,22 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
      */
     private function resolveBinaryPath(string $value, ContainerBuilder $container): ?string
     {
-        /** @var array<string, list<string>> $usedEnvs */
         $usedEnvs = [];
         $container->resolveEnvPlaceholders($value, '%s', $usedEnvs);
 
-        if ([] === $usedEnvs) {
+        if (!$usedEnvs) {
             return $value;
         }
 
         $envName = (string) \array_key_first($usedEnvs);
-        $resolved = $_ENV[$envName] ?? $_SERVER[$envName] ?? \getenv($envName);
+        $resolved = \getenv($envName);
 
-        return false !== $resolved && '' !== (string) $resolved ? (string) $resolved : null;
+        if (false === $resolved || '' === $resolved) {
+            $envValue = $_ENV[$envName] ?? $_SERVER[$envName] ?? '';
+            $resolved = \is_string($envValue) ? $envValue : '';
+        }
+
+        return '' !== $resolved ? $resolved : null;
     }
 
     /**
