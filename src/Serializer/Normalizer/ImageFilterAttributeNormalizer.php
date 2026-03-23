@@ -50,6 +50,8 @@ final class ImageFilterAttributeNormalizer implements NormalizerInterface, Norma
     #[\Override]
     public function normalize(mixed $object, ?string $format = null, array $context = []): array
     {
+        \assert(\is_object($object));
+
         $context[self::class] = true;
 
         /** @var array<string, mixed> $normalized */
