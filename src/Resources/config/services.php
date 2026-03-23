@@ -64,7 +64,7 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(ImagineInterface::class, 'chamber_orchestra_image.driver');
 
     $services->load('ChamberOrchestra\\ImageBundle\\', '../../')
-        ->exclude('../../{DependencyInjection,Resources,Exception,EventSubscriber,Model,Service/FilterResult.php,Message/ProcessImageMessage.php,tests,vendor}')
+        ->exclude('../../{DependencyInjection,Resources,Exception,EventSubscriber,Model,Serializer,Service/FilterResult.php,Message/ProcessImageMessage.php,tests,vendor}')
     ;
 
     $services->set(BinaryMimeTypeGuesser::class)

@@ -16,6 +16,7 @@ use ChamberOrchestra\ImageBundle\DependencyInjection\Factory\Loader\LoaderFactor
 use ChamberOrchestra\ImageBundle\DependencyInjection\Factory\Resolver\ResolverFactoryInterface;
 use ChamberOrchestra\ImageBundle\EventSubscriber\FileRemoveSubscriber;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\CacheManager;
+use ChamberOrchestra\ImageBundle\Serializer\Normalizer\ImageFilterAttributeNormalizer;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\Resolver\CacheResolver;
 use ChamberOrchestra\ImageBundle\Imagine\Data\DataManager;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -144,6 +145,11 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
 
         if (\class_exists(PostRemoveEvent::class)) {
             $container->autowire(FileRemoveSubscriber::class)
+                ->setAutoconfigured(true);
+        }
+
+        if (\class_exists(\Symfony\Component\Serializer\Normalizer\NormalizerInterface::class)) {
+            $container->autowire(ImageFilterAttributeNormalizer::class)
                 ->setAutoconfigured(true);
         }
     }

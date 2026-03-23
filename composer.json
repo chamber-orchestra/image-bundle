@@ -1,136 +1,139 @@
 {
-  "name": "chamber-orchestra/image-bundle",
-  "type": "symfony-bundle",
-  "description": "Symfony 8 bundle for on-demand image processing, resizing, cropping, AVIF/WebP conversion, and caching. Filter pipelines with fit, fill, optimize, strip, interlace processors and avifenc, cwebp, MozJPEG, pngquant post-processors. Filesystem, stream, and S3 loaders/resolvers. HMAC-signed runtime URLs for any client. Async processing via Messenger. Twig filters and responsive <picture> macros. Nginx/Apache/Caddy zero-PHP cache hits.",
-  "keywords": [
-    "symfony",
-    "symfony-bundle",
-    "symfony8",
-    "php8",
-    "image",
-    "image-processing",
-    "image-resize",
-    "image-optimization",
-    "image-cache",
-    "image-filter",
-    "image-crop",
-    "image-conversion",
-    "thumbnail",
-    "resize",
-    "crop",
-    "fit",
-    "fill",
-    "webp",
-    "avif",
-    "cwebp",
-    "avifenc",
-    "mozjpeg",
-    "pngquant",
-    "imagine",
-    "imagine-bundle",
-    "liip-imagine",
-    "filter",
-    "on-demand",
-    "cache",
-    "twig",
-    "picture",
-    "srcset",
-    "retina",
-    "hidpi",
-    "responsive-images",
-    "s3",
-    "hmac",
-    "signed-url",
-    "async",
-    "messenger"
-  ],
-  "homepage": "https://github.com/chamber-orchestra/image-bundle",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Andrew Lukin",
-      "email": "lukin.andrej@gmail.com",
-      "homepage": "https://github.com/wtorsi",
-      "role": "Developer"
+    "name": "chamber-orchestra/image-bundle",
+    "type": "symfony-bundle",
+    "description": "Symfony 8 bundle for on-demand image processing, resizing, cropping, AVIF/WebP conversion, and caching. Filter pipelines with fit, fill, optimize, strip, interlace processors and avifenc, cwebp, MozJPEG, pngquant post-processors. Filesystem, stream, and S3 loaders/resolvers. HMAC-signed runtime URLs for any client. Async processing via Messenger. Twig filters and responsive <picture> macros. Nginx/Apache/Caddy zero-PHP cache hits.",
+    "keywords": [
+        "symfony",
+        "symfony-bundle",
+        "symfony8",
+        "php8",
+        "image",
+        "image-processing",
+        "image-resize",
+        "image-optimization",
+        "image-cache",
+        "image-filter",
+        "image-crop",
+        "image-conversion",
+        "thumbnail",
+        "resize",
+        "crop",
+        "fit",
+        "fill",
+        "webp",
+        "avif",
+        "cwebp",
+        "avifenc",
+        "mozjpeg",
+        "pngquant",
+        "imagine",
+        "imagine-bundle",
+        "liip-imagine",
+        "filter",
+        "on-demand",
+        "cache",
+        "twig",
+        "picture",
+        "srcset",
+        "retina",
+        "hidpi",
+        "responsive-images",
+        "s3",
+        "hmac",
+        "signed-url",
+        "async",
+        "messenger"
+    ],
+    "homepage": "https://github.com/chamber-orchestra/image-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andrew Lukin",
+            "email": "lukin.andrej@gmail.com",
+            "homepage": "https://github.com/wtorsi",
+            "role": "Developer"
+        },
+        {
+            "name": "Girchenko Mikhail",
+            "email": "girchenkomikhail@gmail.com",
+            "homepage": "https://github.com/baldrys-ed",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/chamber-orchestra/image-bundle/issues",
+        "source": "https://github.com/chamber-orchestra/image-bundle",
+        "docs": "https://github.com/chamber-orchestra/image-bundle#readme"
     },
-    {
-      "name": "Girchenko Mikhail",
-      "email": "girchenkomikhail@gmail.com",
-      "homepage": "https://github.com/baldrys-ed",
-      "role": "Developer"
-    }
-  ],
-  "support": {
-    "issues": "https://github.com/chamber-orchestra/image-bundle/issues",
-    "source": "https://github.com/chamber-orchestra/image-bundle",
-    "docs": "https://github.com/chamber-orchestra/image-bundle#readme"
-  },
-  "require": {
-    "php": "^8.5",
-    "ext-exif": "*",
-    "chamber-orchestra/file-bundle": "8.0.*",
-    "imagine/imagine": "^1.3",
-    "psr/cache": "^3.0",
-    "symfony/config": "8.0.*",
-    "symfony/dependency-injection": "8.0.*",
-    "symfony/filesystem": "8.0.*",
-    "symfony/http-foundation": "8.0.*",
-    "symfony/http-kernel": "8.0.*",
-    "symfony/mime": "8.0.*",
-    "symfony/options-resolver": "8.0.*",
-    "symfony/process": "8.0.*",
-    "symfony/routing": "8.0.*"
-  },
-  "require-dev": {
-    "aws/aws-sdk-php": "^3.0",
-    "ext-gd": "*",
-    "ext-gmagick": "*",
-    "ext-imagick": "*",
-    "friendsofphp/php-cs-fixer": "^3.0",
-    "phpstan/phpstan": "^2.0",
-    "phpunit/phpunit": "^13.0",
-    "psr/log": "^3.0",
-    "symfony/lock": "^8.0",
-    "symfony/messenger": "^8.0",
-    "twig/twig": "^3.0",
-    "vincentlanglet/twig-cs-fixer": "^3.0"
-  },
-  "suggest": {
-    "ext-imagick": "Recommended image driver — enables WebP, AVIF, and advanced format support",
-    "ext-gd": "Alternative image driver — lighter footprint, limited format support",
-    "ext-gmagick": "Alternative image driver via GraphicsMagick",
-    "twig/twig": "Required for image_filter, fit, fill, optimize, and avif Twig filters and responsive <picture> macros",
-    "aws/aws-sdk-php": "Required for S3 loader and resolver support (MinIO, DigitalOcean Spaces)",
-    "symfony/messenger": "Required for async image processing — auto-detected when installed",
-    "symfony/lock": "Required for dispatch deduplication and worker concurrency limiting",
-    "avifenc": "CLI binary for converting images to AVIF via AvifPostProcessor",
-    "cwebp": "CLI binary for converting images to WebP via CwebpPostProcessor",
-    "mozjpeg": "CLI binary (cjpeg) for JPEG optimisation via MozJpegPostProcessor",
-    "pngquant": "CLI binary for lossy PNG compression via PngquantPostProcessor"
-  },
-  "autoload": {
-    "psr-4": {
-      "ChamberOrchestra\\ImageBundle\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Tests\\": "tests/"
-    }
-  },
-  "minimum-stability": "stable",
-  "config": {
-    "sort-packages": true,
-    "allow-plugins": {
-      "symfony/runtime": true
-    }
-  },
-  "scripts": {
-    "test": "vendor/bin/phpunit",
-    "analyse": "vendor/bin/phpstan analyse --memory-limit=512M",
-    "cs-fix": "vendor/bin/php-cs-fixer fix",
-    "cs-check": "vendor/bin/php-cs-fixer fix --dry-run --diff",
-    "twig-lint": "vendor/bin/twig-cs-fixer lint src/Resources/views --no-cache",
-    "twig-fix": "vendor/bin/twig-cs-fixer lint src/Resources/views --fix --no-cache"
-  }
+    "require": {
+        "php": "^8.5",
+        "ext-exif": "*",
+        "chamber-orchestra/file-bundle": "8.0.*",
+        "imagine/imagine": "^1.3",
+        "psr/cache": "^3.0",
+        "symfony/config": "8.0.*",
+        "symfony/dependency-injection": "8.0.*",
+        "symfony/filesystem": "8.0.*",
+        "symfony/http-foundation": "8.0.*",
+        "symfony/http-kernel": "8.0.*",
+        "symfony/mime": "8.0.*",
+        "symfony/options-resolver": "8.0.*",
+        "symfony/process": "8.0.*",
+        "symfony/routing": "8.0.*"
+    },
+    "require-dev": {
+        "aws/aws-sdk-php": "^3.0",
+        "symfony/serializer": "8.0.*",
+        "ext-gd": "*",
+        "ext-gmagick": "*",
+        "ext-imagick": "*",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^13.0",
+        "psr/log": "^3.0",
+        "symfony/lock": "^8.0",
+        "symfony/messenger": "^8.0",
+        "twig/twig": "^3.0",
+        "vincentlanglet/twig-cs-fixer": "^3.0"
+    },
+    "suggest": {
+        "ext-imagick": "Recommended image driver — enables WebP, AVIF, and advanced format support",
+        "ext-gd": "Alternative image driver — lighter footprint, limited format support",
+        "ext-gmagick": "Alternative image driver via GraphicsMagick",
+        "twig/twig": "Required for image_filter, fit, fill, optimize, and avif Twig filters and responsive <picture> macros",
+        "aws/aws-sdk-php": "Required for S3 loader and resolver support (MinIO, DigitalOcean Spaces)",
+        "symfony/messenger": "Required for async image processing — auto-detected when installed",
+        "symfony/serializer": "Required for ImageFilterAttributeNormalizer — generates image URLs in API responses via #[ImageFilter] attribute",
+        "symfony/lock": "Required for dispatch deduplication and worker concurrency limiting",
+        "avifenc": "CLI binary for converting images to AVIF via AvifPostProcessor",
+        "cwebp": "CLI binary for converting images to WebP via CwebpPostProcessor",
+        "mozjpeg": "CLI binary (cjpeg) for JPEG optimisation via MozJpegPostProcessor",
+        "pngquant": "CLI binary for lossy PNG compression via PngquantPostProcessor"
+    },
+    "autoload": {
+        "psr-4": {
+            "ChamberOrchestra\\ImageBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/runtime": true
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=512M",
+        "cs-fix": "vendor/bin/php-cs-fixer fix",
+        "cs-check": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "twig-lint": "vendor/bin/twig-cs-fixer lint src/Resources/views --no-cache",
+        "twig-fix": "vendor/bin/twig-cs-fixer lint src/Resources/views --fix --no-cache"
+    },
+    "version": "8.0.0"
 }
