@@ -148,7 +148,7 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
                 ->setAutoconfigured(true);
         }
 
-        if (\class_exists(\Symfony\Component\Serializer\Normalizer\NormalizerInterface::class)) {
+        if (\interface_exists(\Symfony\Component\Serializer\Normalizer\NormalizerInterface::class)) {
             $container->autowire(ImageFilterAttributeNormalizer::class)
                 ->setAutoconfigured(true);
         }

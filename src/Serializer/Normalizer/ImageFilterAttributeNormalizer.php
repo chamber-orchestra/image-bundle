@@ -21,8 +21,9 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 /**
  * Generates image URLs for properties annotated with #[ImageFilter].
  *
- * Produces the same avif/webp/src × 1x/2x/3x HMAC-signed URL structure
- * as the Twig image macros, suitable for API responses.
+ * Produces a keyed map of avif/webp/src × 1x/2x/3x HMAC-signed URL structures,
+ * mirroring the Twig image macros, suitable for API responses.
+ * Multiple attributes on the same property yield multiple keys.
  *
  * Requires symfony/serializer. The service is registered conditionally
  * in ChamberOrchestraImageExtension only when the component is available.
@@ -32,8 +33,7 @@ final class ImageFilterAttributeNormalizer implements NormalizerInterface, Norma
     use NormalizerAwareTrait;
 
     private const DENSITIES = [1, 2, 3];
-    /** @var array<int, string|null> null = keep original format */
-    private const FORMATS = ['avif', 'webp', null];
+    private const FORMATS = ['avif', 'webp'];
 
     /** @var array<class-string, bool> Per-request class support cache to avoid repeated reflection scans */
     private array $supportsCache = [];
@@ -77,10 +77,14 @@ final class ImageFilterAttributeNormalizer implements NormalizerInterface, Norma
                 continue;
             }
 
-            $normalized[$property->getName()] = $this->generateSources(
-                \ltrim($uri, '/'),
-                $attrs[0]->newInstance(),
-            );
+            $path = \ltrim($uri, '/');
+            $sources = [];
+            foreach ($attrs as $attr) {
+                $instance = $attr->newInstance();
+                $sources[$instance->key] = $this->generateSources($path, $instance);
+            }
+
+            $normalized[$property->getName()] = $sources;
         }
 
         return $normalized;
@@ -114,7 +118,6 @@ final class ImageFilterAttributeNormalizer implements NormalizerInterface, Norma
      * Mirrors the Twig macro output structure:
      *   avif → {1x, 2x, 3x}
      *   webp → {1x, 2x, 3x}
-     *   src  → {1x, 2x, 3x}  (original format)
      *
      * @return array<string, array<string, string>>
      */
@@ -123,13 +126,12 @@ final class ImageFilterAttributeNormalizer implements NormalizerInterface, Norma
         $result = [];
 
         foreach (self::FORMATS as $imageFormat) {
-            $key = $imageFormat ?? 'src';
-            $output = null !== $imageFormat ? ['output' => ['format' => $imageFormat]] : [];
+            $output = ['output' => ['format' => $imageFormat]];
 
             foreach (self::DENSITIES as $density) {
                 $config = [$attr->filter => ['density' => $density], ...$output];
 
-                $result[$key][\sprintf('%dx', $density)] = match ($attr->filter) {
+                $result[$imageFormat][\sprintf('%dx', $density)] = match ($attr->filter) {
                     'fit' => $this->imageRuntime->fit($path, $attr->width, $attr->height, $config, $attr->preset),
                     'optimize' => $this->imageRuntime->optimize($path, $attr->width, $config, $attr->preset),
                     default => $this->imageRuntime->fill($path, $attr->width, $attr->height, $config, $attr->preset),
