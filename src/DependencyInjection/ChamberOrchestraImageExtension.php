@@ -16,9 +16,9 @@ use ChamberOrchestra\ImageBundle\DependencyInjection\Factory\Loader\LoaderFactor
 use ChamberOrchestra\ImageBundle\DependencyInjection\Factory\Resolver\ResolverFactoryInterface;
 use ChamberOrchestra\ImageBundle\EventSubscriber\FileRemoveSubscriber;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\CacheManager;
-use ChamberOrchestra\ImageBundle\Serializer\Normalizer\ImageFilterAttributeNormalizer;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\Resolver\CacheResolver;
 use ChamberOrchestra\ImageBundle\Imagine\Data\DataManager;
+use ChamberOrchestra\ImageBundle\Serializer\Normalizer\ImageFilterAttributeNormalizer;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
