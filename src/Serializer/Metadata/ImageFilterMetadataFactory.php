@@ -172,7 +172,8 @@ final class ImageFilterMetadataFactory
     /**
      * Recursively collects file paths from traits (including traits used by traits).
      *
-     * @param array<string, true> $files
+     * @param array<string, true>      $files
+     * @param \ReflectionClass<object> $ref
      */
     private function collectTraitFiles(\ReflectionClass $ref, array &$files): void
     {

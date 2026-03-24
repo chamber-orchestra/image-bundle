@@ -177,9 +177,13 @@ final class ImageFilterAttributeNormalizer implements NormalizerInterface, Norma
 
             // Associative entry: ['default' => ['avif' => ['1x']]]
             if (\is_string($key) && \array_key_exists($key, $data)) {
-                $result[$key] = \is_array($subFilter) && \is_array($data[$key])
-                    ? $this->pruneNested($data[$key], $subFilter)
-                    : $data[$key];
+                if (\is_array($subFilter) && \is_array($data[$key])) {
+                    /** @var array<string, mixed> $nested */
+                    $nested = $data[$key];
+                    $result[$key] = $this->pruneNested($nested, $subFilter);
+                } else {
+                    $result[$key] = $data[$key];
+                }
             }
         }
 
