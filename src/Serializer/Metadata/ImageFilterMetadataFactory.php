@@ -102,12 +102,7 @@ final class ImageFilterMetadataFactory
 
                 foreach ($instance->densities as $density) {
                     if ($density < 1 || $density > 4) {
-                        throw new \InvalidArgumentException(\sprintf(
-                            'Density %d on property %s::%s is out of range (allowed: 1–4).',
-                            $density,
-                            $className,
-                            $property->getName(),
-                        ));
+                        throw new \InvalidArgumentException(\sprintf('Density %d on property %s::%s is out of range (allowed: 1–4).', $density, $className, $property->getName()));
                     }
                 }
 
