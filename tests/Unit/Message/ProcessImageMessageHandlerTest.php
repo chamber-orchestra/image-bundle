@@ -14,12 +14,14 @@ namespace Tests\Unit\Message;
 use ChamberOrchestra\ImageBundle\Message\ProcessImageMessage;
 use ChamberOrchestra\ImageBundle\Message\ProcessImageMessageHandler;
 use ChamberOrchestra\ImageBundle\Service\FilterService;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\SharedLockInterface;
 use Symfony\Component\Messenger\Exception\RecoverableMessageHandlingException;
 
+#[AllowMockObjectsWithoutExpectations]
 class ProcessImageMessageHandlerTest extends TestCase
 {
     #[Test]
@@ -87,7 +89,7 @@ class ProcessImageMessageHandlerTest extends TestCase
         $filterService->expects($this->once())->method('getProcessedImageUrl');
 
         $occupiedLock = $this->createMock(SharedLockInterface::class);
-        $occupiedLock->method('acquire')->with(false)->willReturn(false);
+        $occupiedLock->expects($this->atLeastOnce())->method('acquire')->with(false)->willReturn(false);
 
         $freeLock = $this->createMock(SharedLockInterface::class);
         $freeLock->expects($this->once())->method('acquire')->with(false)->willReturn(true);
@@ -110,7 +112,7 @@ class ProcessImageMessageHandlerTest extends TestCase
         $filterService->expects($this->never())->method('getProcessedImageUrl');
 
         $lock = $this->createMock(SharedLockInterface::class);
-        $lock->method('acquire')->with(false)->willReturn(false);
+        $lock->expects($this->atLeastOnce())->method('acquire')->with(false)->willReturn(false);
 
         $lockFactory = $this->createMock(LockFactory::class);
         $lockFactory->method('createLock')->willReturn($lock);

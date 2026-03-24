@@ -71,14 +71,29 @@ class StreamLoader extends AbstractLoader implements LoaderInterface
         return $content;
     }
 
+    /**
+     * Validates the URI scheme against the allowlist.
+     *
+     * Detects schemes in both standard (scheme://) and compact (scheme:) forms
+     * to cover PHP stream wrappers like "data:" that don't use "://".
+     * Bare paths (absolute or relative, no colon before a slash) are treated as
+     * implicit "file" and checked against the allowlist.
+     */
     private function validateScheme(string $uri): void
     {
-        $colonPos = \strpos($uri, '://');
-        if (false === $colonPos) {
-            return; // No scheme means a relative/absolute path — allowed
+        // Extract scheme: look for "word:" at the start, but not "C:\" (Windows drive)
+        if (\preg_match('/^([a-zA-Z][a-zA-Z0-9+.\-]*):/', $uri, $matches)) {
+            $scheme = \strtolower($matches[1]);
+
+            // Single-letter "schemes" are Windows drive letters (C:\...), treat as file
+            if (1 === \strlen($scheme)) {
+                $scheme = 'file';
+            }
+        } else {
+            // No scheme prefix — bare path (relative or absolute), implicit file access
+            $scheme = 'file';
         }
 
-        $scheme = \strtolower(\substr($uri, 0, $colonPos));
         if (!\in_array($scheme, $this->allowedSchemes, true)) {
             throw new NotLoadableException(\sprintf('Stream scheme "%s" is not allowed. Allowed schemes: %s.', $scheme, \implode(', ', $this->allowedSchemes)));
         }

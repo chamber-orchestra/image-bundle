@@ -250,6 +250,67 @@ class CacheManagerTest extends TestCase
         self::assertSame('abc/def12345678901234/photo@3x.avif', $result);
     }
 
+    #[Test]
+    public function getPathAndGenerateUrlSignWithSameConfigDespiteExtraTopLevelKeys(): void
+    {
+        // ImageRuntime leaves extra top-level keys (e.g. 'fill') after merging into 'processors'.
+        // Both getPath() and generateUrl() must normalize to the same signing input.
+        $configWithExtraKeys = [
+            'processors' => ['fill' => ['width' => 300, 'height' => 300, 'density' => 2]],
+            'fill' => ['density' => 2],
+            'output' => ['format' => 'avif'],
+        ];
+        $configFromController = [
+            'processors' => ['fill' => ['width' => 300, 'height' => 300, 'density' => 2]],
+            'output' => ['format' => 'avif'],
+        ];
+
+        $signedConfigs = [];
+        $this->signer->method('sign')->willReturnCallback(
+            function (string $path, string $secret, array $config) use (&$signedConfigs): string {
+                $signedConfigs[] = $config;
+
+                return 'abc12345678901234/def12345678901234';
+            },
+        );
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
+
+        $manager = $this->makeManager();
+
+        // getPath called from getBrowserPath (with extra keys from ImageRuntime)
+        $manager->getPath('scores/moonlight_sonata.jpg', $configWithExtraKeys, 'default');
+        // getPath called from controller (without extra keys)
+        $manager->getPath('scores/moonlight_sonata.jpg', $configFromController, 'default');
+
+        self::assertSame($signedConfigs[0], $signedConfigs[1], 'getPath() must sign the same config regardless of extra top-level keys');
+    }
+
+    #[Test]
+    public function generateUrlIncludesOutputInQueryParams(): void
+    {
+        $this->signer->method('sign')->willReturn('abc12345678901234/def12345678901234');
+        $this->filterConfig->method('get')->willReturn(['resolver' => 'default', 'secret' => 'test-secret']);
+
+        $this->router->expects($this->once())
+            ->method('generate')
+            ->with(
+                '_chamber_orchestra_image',
+                $this->callback(function (array $params): bool {
+                    return isset($params['output']['format'])
+                        && 'avif' === $params['output']['format'];
+                }),
+                $this->anything(),
+            )
+            ->willReturn('/_media/default/abc/photo.avif');
+
+        $manager = $this->makeManager();
+        $manager->generateUrl(
+            'photo.jpg',
+            'default',
+            ['processors' => ['fill' => ['width' => 300]], 'output' => ['format' => 'avif']],
+        );
+    }
+
     private function makeManager(): CacheManager
     {
         return new CacheManager($this->filterConfig, $this->router, $this->signer);

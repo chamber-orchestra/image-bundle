@@ -18,6 +18,7 @@ use ChamberOrchestra\ImageBundle\Imagine\Filter\FilterConfiguration;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\FilterManager;
 use ChamberOrchestra\ImageBundle\Message\ProcessImageMessage;
 use ChamberOrchestra\ImageBundle\Service\FilterService;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Lock\LockFactory;
@@ -25,6 +26,7 @@ use Symfony\Component\Lock\SharedLockInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+#[AllowMockObjectsWithoutExpectations]
 class FilterServiceTest extends TestCase
 {
     private DataManager $dataManager;

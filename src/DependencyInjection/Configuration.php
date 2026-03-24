@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace ChamberOrchestra\ImageBundle\DependencyInjection;
 
 use ChamberOrchestra\ImageBundle\DependencyInjection\Factory\Resolver\ResolverFactoryInterface;
+use ChamberOrchestra\ImageBundle\Enum\ImageFormat;
 use ChamberOrchestra\ImageBundle\Enum\ImagineDriver;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
@@ -106,6 +107,20 @@ final readonly class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
                 ->integerNode('concurrency')->defaultValue(0)->min(0)->end()
+                ->arrayNode('serializer')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->arrayNode('formats')
+                            ->defaultValue(['avif', 'webp'])
+                            ->scalarPrototype()
+                                ->validate()
+                                    ->ifNotInArray(ImageFormat::values())
+                                    ->thenInvalid('Invalid serializer format "%s". Supported: '.\implode(', ', ImageFormat::values()))
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
                 ->arrayNode('cache')
                     ->addDefaultsIfNotSet()
                     ->children()

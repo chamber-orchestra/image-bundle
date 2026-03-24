@@ -65,8 +65,13 @@ class PngquantPostProcessor extends AbstractPostProcessor implements PostProcess
         $quality = (string) $rawQuality;
         if (!\preg_match('/^\d{1,3}(-\d{1,3})?$/', $quality)) {
             $quality = '80-100';
+        } else {
+            // Clamp range values to 0-100
+            $parts = \explode('-', $quality);
+            $parts = \array_map(static fn (string $v): int => \max(0, \min(100, (int) $v)), $parts);
+            $quality = \implode('-', $parts);
         }
-        $timeout = \max(1, (int) $rawTimeout);
+        $timeout = \max(1, \min(300, (int) $rawTimeout));
 
         $command[] = '--quality';
         $command[] = $quality;

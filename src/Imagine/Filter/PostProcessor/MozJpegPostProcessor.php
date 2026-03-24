@@ -70,7 +70,7 @@ class MozJpegPostProcessor extends AbstractPostProcessor implements PostProcesso
         $rawTimeout = $options['timeout'];
 
         $quality = \max(0, \min(100, (int) $rawQuality));
-        $timeout = \max(1, (int) $rawTimeout);
+        $timeout = \max(1, \min(300, (int) $rawTimeout));
 
         $command[] = '-quality';
         $command[] = (string) $quality;

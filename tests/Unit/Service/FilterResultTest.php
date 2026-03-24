@@ -13,9 +13,11 @@ namespace Tests\Unit\Service;
 
 use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
 use ChamberOrchestra\ImageBundle\Service\FilterResult;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
+#[AllowMockObjectsWithoutExpectations]
 class FilterResultTest extends TestCase
 {
     #[Test]

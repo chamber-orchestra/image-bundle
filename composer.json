@@ -82,16 +82,18 @@
     "symfony/routing": "8.0.*"
   },
   "require-dev": {
-    "aws/aws-sdk-php": "^3.0",
     "ext-gd": "*",
     "ext-gmagick": "*",
     "ext-imagick": "*",
+    "aws/aws-sdk-php": "^3.0",
+    "chamber-orchestra/view-bundle": "8.0.*",
     "friendsofphp/php-cs-fixer": "^3.0",
     "phpstan/phpstan": "^2.0",
     "phpunit/phpunit": "^13.0",
     "psr/log": "^3.0",
     "symfony/lock": "^8.0",
     "symfony/messenger": "^8.0",
+    "symfony/serializer": "8.0.*",
     "twig/twig": "^3.0",
     "vincentlanglet/twig-cs-fixer": "^3.0"
   },
@@ -102,6 +104,7 @@
     "twig/twig": "Required for image_filter, fit, fill, optimize, and avif Twig filters and responsive <picture> macros",
     "aws/aws-sdk-php": "Required for S3 loader and resolver support (MinIO, DigitalOcean Spaces)",
     "symfony/messenger": "Required for async image processing — auto-detected when installed",
+    "symfony/serializer": "Required for ImageFilterAttributeNormalizer — generates image URLs in API responses via #[ImageFilter] attribute",
     "symfony/lock": "Required for dispatch deduplication and worker concurrency limiting",
     "avifenc": "CLI binary for converting images to AVIF via AvifPostProcessor",
     "cwebp": "CLI binary for converting images to WebP via CwebpPostProcessor",

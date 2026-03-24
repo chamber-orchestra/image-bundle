@@ -91,7 +91,7 @@ class CwebpPostProcessor extends AbstractPostProcessor implements PostProcessorI
             $rawTimeout = $options['timeout'];
 
             $quality = \max(0, \min(100, (int) $rawQuality));
-            $timeout = \max(1, (int) $rawTimeout);
+            $timeout = \max(1, \min(300, (int) $rawTimeout));
 
             $command = [$this->bin, '-q', (string) $quality, '-quiet', $input, '-o', '-'];
 

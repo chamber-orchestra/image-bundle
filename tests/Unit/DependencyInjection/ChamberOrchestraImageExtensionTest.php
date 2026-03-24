@@ -197,6 +197,36 @@ class ChamberOrchestraImageExtensionTest extends TestCase
         self::assertTrue(true, 'No exception thrown for unused post-processor binary');
     }
 
+    #[Test]
+    public function invalidSerializerFormatThrowsAtConfigTime(): void
+    {
+        $container = $this->createMinimalContainer();
+        $container->loadFromExtension('chamber_orchestra_image', [
+            'serializer' => [
+                'formats' => ['exe'],
+            ],
+        ]);
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessageMatches('/Invalid serializer format.*exe/');
+        $this->compileContainer($container);
+    }
+
+    #[Test]
+    public function validSerializerFormatsPassValidation(): void
+    {
+        $container = $this->createMinimalContainer();
+        $container->loadFromExtension('chamber_orchestra_image', [
+            'serializer' => [
+                'formats' => ['webp', 'avif', 'png'],
+            ],
+        ]);
+
+        $this->compileContainer($container);
+
+        self::assertTrue(true, 'No exception thrown for valid serializer formats');
+    }
+
     private function createMinimalContainer(): ContainerBuilder
     {
         $container = new ContainerBuilder();
