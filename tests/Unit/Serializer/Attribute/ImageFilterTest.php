@@ -26,6 +26,7 @@ class ImageFilterTest extends TestCase
         self::assertSame('fill', $attr->filter);
         self::assertSame(0, $attr->width);
         self::assertSame(0, $attr->height);
+        self::assertSame([1, 2, 3, 4], $attr->densities);
         self::assertSame('default', $attr->preset);
     }
 
@@ -37,6 +38,7 @@ class ImageFilterTest extends TestCase
             filter: 'fit',
             width: 800,
             height: 400,
+            densities: [1, 2],
             preset: 'high_quality',
         );
 
@@ -44,6 +46,7 @@ class ImageFilterTest extends TestCase
         self::assertSame('fit', $attr->filter);
         self::assertSame(800, $attr->width);
         self::assertSame(400, $attr->height);
+        self::assertSame([1, 2], $attr->densities);
         self::assertSame('high_quality', $attr->preset);
     }
 

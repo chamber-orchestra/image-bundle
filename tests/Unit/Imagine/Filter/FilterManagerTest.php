@@ -22,11 +22,13 @@ use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\ProcessorInterface;
 use ChamberOrchestra\ImageBundle\Model\Binary;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\ImagineInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Mime\MimeTypesInterface;
 
+#[AllowMockObjectsWithoutExpectations]
 class FilterManagerTest extends TestCase
 {
     private ImagineInterface $imagine;

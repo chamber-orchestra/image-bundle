@@ -60,6 +60,7 @@ final class ImageFilterAttributeNormalizerTest extends KernelTestCase
             self::assertArrayHasKey('1x', $sources[$format]);
             self::assertArrayHasKey('2x', $sources[$format]);
             self::assertArrayHasKey('3x', $sources[$format]);
+            self::assertArrayHasKey('4x', $sources[$format]);
             self::assertNotEmpty($sources[$format]['1x']);
             self::assertIsString($sources[$format]['1x']);
         }
@@ -84,7 +85,7 @@ final class ImageFilterAttributeNormalizerTest extends KernelTestCase
         foreach (['thumbnail', 'hero'] as $key) {
             self::assertArrayHasKey('avif', $result['poster'][$key]);
             self::assertArrayHasKey('webp', $result['poster'][$key]);
-            self::assertCount(3, $result['poster'][$key]['avif']);
+            self::assertCount(4, $result['poster'][$key]['avif']);
         }
     }
 

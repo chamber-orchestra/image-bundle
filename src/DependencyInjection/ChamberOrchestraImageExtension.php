@@ -18,6 +18,7 @@ use ChamberOrchestra\ImageBundle\EventSubscriber\FileRemoveSubscriber;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\CacheManager;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\Resolver\CacheResolver;
 use ChamberOrchestra\ImageBundle\Imagine\Data\DataManager;
+use ChamberOrchestra\ImageBundle\Serializer\Metadata\ImageFilterMetadataFactory;
 use ChamberOrchestra\ImageBundle\Serializer\Normalizer\ImageFilterAttributeNormalizer;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
@@ -149,8 +150,20 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
         }
 
         if (\interface_exists(\Symfony\Component\Serializer\Normalizer\NormalizerInterface::class)) {
+            /** @var bool $debug */
+            $debug = $container->getParameter('kernel.debug');
+            /** @var array{formats: list<string>} $serializerConfig */
+            $serializerConfig = $config['serializer'];
+
+            $container->register(ImageFilterMetadataFactory::class)
+                ->setArguments([
+                    new Reference('cache.app', ContainerBuilder::NULL_ON_INVALID_REFERENCE),
+                    $debug,
+                ]);
+
             $container->autowire(ImageFilterAttributeNormalizer::class)
-                ->setAutoconfigured(true);
+                ->setAutoconfigured(true)
+                ->setArgument('$formats', $serializerConfig['formats']);
         }
     }
 

@@ -108,4 +108,60 @@ class StreamLoaderTest extends TestCase
 
         self::assertSame('prefix-suffix', $result);
     }
+
+    #[Test]
+    public function findRejectsCompactDataSchemeWhenNotAllowed(): void
+    {
+        // data: (without //) should be caught when data is not in the allowlist
+        $loader = new StreamLoader('', null, ['file']);
+
+        $this->expectException(NotLoadableException::class);
+        $this->expectExceptionMessageMatches('/scheme "data" is not allowed/i');
+
+        $loader->find('data:text/plain,hello');
+    }
+
+    #[Test]
+    public function findRejectsAbsolutePathWhenFileNotAllowed(): void
+    {
+        // Bare absolute paths are implicit "file" scheme
+        $loader = new StreamLoader('', null, ['https']);
+
+        $this->expectException(NotLoadableException::class);
+        $this->expectExceptionMessageMatches('/scheme "file" is not allowed/i');
+
+        $loader->find('/etc/hosts');
+    }
+
+    #[Test]
+    public function findRejectsRelativePathWhenFileNotAllowed(): void
+    {
+        $loader = new StreamLoader('', null, ['https']);
+
+        $this->expectException(NotLoadableException::class);
+        $this->expectExceptionMessageMatches('/scheme "file" is not allowed/i');
+
+        $loader->find('relative/path.jpg');
+    }
+
+    #[Test]
+    public function findAllowsCompactDataSchemeWhenInAllowlist(): void
+    {
+        $loader = new StreamLoader('', null, ['data']);
+
+        $result = $loader->find('data:text/plain,hello');
+
+        self::assertSame('hello', $result);
+    }
+
+    #[Test]
+    public function findRejectsPhpScheme(): void
+    {
+        $loader = new StreamLoader('', null, ['file']);
+
+        $this->expectException(NotLoadableException::class);
+        $this->expectExceptionMessageMatches('/scheme "php" is not allowed/i');
+
+        $loader->find('php://filter/convert.base64-encode/resource=/etc/passwd');
+    }
 }

@@ -65,7 +65,7 @@ class CacheManager
             return $output['path'];
         }
 
-        $hash = $this->signer->sign($path, $this->getFilterSecret($filter), $config);
+        $hash = $this->signer->sign($path, $this->getFilterSecret($filter), self::normalizeSigningConfig($config));
         $name = \pathinfo($path, \PATHINFO_FILENAME);
         $format = (string) ($output['format'] ?? \pathinfo($path, \PATHINFO_EXTENSION));
         $density = $this->extractDensity($config);
@@ -97,7 +97,14 @@ class CacheManager
         /** @var array<string, mixed> $processors */
         $processors = $config['processors'] ?? $config;
         $params['processors'] = $processors;
-        $params['hash'] = $this->signer->sign($path, $this->getFilterSecret($filter), $processors);
+
+        /** @var array<string, mixed>|null $output */
+        $output = $config['output'] ?? null;
+        if ($output) {
+            $params['output'] = $output;
+        }
+
+        $params['hash'] = $this->signer->sign($path, $this->getFilterSecret($filter), self::normalizeSigningConfig($config));
 
         return $this->router->generate('_chamber_orchestra_image', $params, $referenceType);
     }
@@ -172,6 +179,26 @@ class CacheManager
     private function getFilterSecret(string $filter): string
     {
         return $this->filterConfig->get($filter)['secret'];
+    }
+
+    /**
+     * Extracts only the canonical keys (processors + output) for signing.
+     * This ensures the same hash regardless of extra convenience keys
+     * (e.g. top-level 'fill', 'fit') that ImageRuntime may leave in the config.
+     *
+     * @param array<string, mixed> $config
+     *
+     * @return array<string, mixed>
+     */
+    private static function normalizeSigningConfig(array $config): array
+    {
+        /** @var array<string, mixed> $processors */
+        $processors = $config['processors'] ?? $config;
+
+        /** @var array<string, mixed>|null $output */
+        $output = $config['output'] ?? null;
+
+        return $output ? ['processors' => $processors, 'output' => $output] : $processors;
     }
 
     /**

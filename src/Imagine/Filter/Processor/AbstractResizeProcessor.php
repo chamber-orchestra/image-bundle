@@ -39,7 +39,9 @@ abstract class AbstractResizeProcessor extends AbstractProcessor
         ]);
 
         $resolver->setAllowedValues('density', function (string|int|float $value): bool {
-            return self::DEFAULT_DENSITY <= (float) $value;
+            $v = (float) $value;
+
+            return $v >= self::DEFAULT_DENSITY && $v <= 4.0;
         });
 
         $resolver->setNormalizer('density', function (Options $options, string|int|float $value): float {

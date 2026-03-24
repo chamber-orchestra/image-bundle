@@ -29,17 +29,19 @@ namespace ChamberOrchestra\ImageBundle\Serializer\Attribute;
 final class ImageFilter
 {
     /**
-     * @param string $key    Unique key in the serialized output (default: "default")
-     * @param string $filter Processor type: fill | fit | optimize
-     * @param int    $width  Logical width in CSS pixels
-     * @param int    $height Logical height in CSS pixels (0 = auto)
-     * @param string $preset Named filter from chamber_orchestra_image.filters.* config
+     * @param string    $key       Unique key in the serialized output (default: "default")
+     * @param string    $filter    Processor type: fill | fit | optimize
+     * @param int       $width     Logical width in CSS pixels
+     * @param int       $height    Logical height in CSS pixels (0 = auto)
+     * @param list<int> $densities Pixel densities to generate (e.g. [1, 2, 3])
+     * @param string    $preset    Named filter from chamber_orchestra_image.filters.* config
      */
     public function __construct(
         public readonly string $key = 'default',
         public readonly string $filter = 'fill',
         public readonly int $width = 0,
         public readonly int $height = 0,
+        public readonly array $densities = [1, 2, 3, 4],
         public readonly string $preset = 'default',
     ) {
     }

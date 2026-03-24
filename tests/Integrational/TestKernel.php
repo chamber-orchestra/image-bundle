@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Tests\Integrational;
 
 use ChamberOrchestra\ImageBundle\ChamberOrchestraImageBundle;
+use ChamberOrchestra\ImageBundle\Serializer\Metadata\ImageFilterMetadataFactory;
 use ChamberOrchestra\ImageBundle\Serializer\Normalizer\ImageFilterAttributeNormalizer;
 use ChamberOrchestra\ViewBundle\ChamberOrchestraViewBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -65,6 +66,10 @@ final class TestKernel extends Kernel
             {
                 if ($container->hasDefinition(ImageFilterAttributeNormalizer::class)) {
                     $container->getDefinition(ImageFilterAttributeNormalizer::class)->setPublic(true);
+                }
+
+                if ($container->hasDefinition(ImageFilterMetadataFactory::class)) {
+                    $container->getDefinition(ImageFilterMetadataFactory::class)->setPublic(true);
                 }
             }
         });

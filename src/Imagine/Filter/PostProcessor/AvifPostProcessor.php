@@ -99,7 +99,7 @@ class AvifPostProcessor extends AbstractPostProcessor implements PostProcessorIn
 
             $quality = \max(0, \min(100, (int) $rawQuality));
             $speed = \max(0, \min(10, (int) $rawSpeed));
-            $timeout = \max(1, (int) $rawTimeout);
+            $timeout = \max(1, \min(300, (int) $rawTimeout));
 
             $command = [$this->bin, '-q', (string) $quality, '-s', (string) $speed, $input, '-o', $output];
 

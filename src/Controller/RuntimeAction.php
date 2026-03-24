@@ -46,24 +46,32 @@ class RuntimeAction
         }
 
         $resolver = $request->query->get('resolver');
-        /** @var array<string, mixed> $config */
-        $config = $request->query->all('processors');
+        /** @var array<string, mixed> $processors */
+        $processors = $request->query->all('processors');
+        /** @var array<string, mixed> $output */
+        $output = $request->query->all('output');
 
-        if (!$config) {
+        if (!$processors) {
             throw new BadRequestHttpException(\sprintf('Runtime processors must be provided for path "%s" and filter "%s"', $path, $filter));
         }
 
-        if (self::arrayDepth($config) > 5) {
+        if (self::arrayDepth($processors) > 5) {
             throw new BadRequestHttpException('Runtime processors configuration is too deeply nested.');
         }
 
         $filterSecret = $this->filterConfig->get($filter)['secret'];
+        $signingConfig = $output ? ['processors' => $processors, 'output' => $output] : $processors;
 
-        if (true !== $this->signer->check($hash, $path, $filterSecret, $config)) {
-            throw new BadRequestHttpException(\sprintf('Signed url does not pass the sign check for path "%s" and filter "%s" and runtime config %s', $path, $filter, \json_encode($config)));
+        if (true !== $this->signer->check($hash, $path, $filterSecret, $signingConfig)) {
+            throw new BadRequestHttpException(\sprintf('Signed url does not pass the sign check for path "%s" and filter "%s" and runtime config %s', $path, $filter, \json_encode($signingConfig)));
         }
 
-        return $this->processAndRespond($this->filterService, $path, $filter, ['processors' => $config], resolver: $resolver);
+        $fullConfig = ['processors' => $processors];
+        if ($output) {
+            $fullConfig['output'] = $output;
+        }
+
+        return $this->processAndRespond($this->filterService, $path, $filter, $fullConfig, resolver: $resolver);
     }
 
     /**

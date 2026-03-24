@@ -13,12 +13,15 @@ namespace Tests\Unit\Serializer\Normalizer;
 
 use ChamberOrchestra\FileBundle\Model\File;
 use ChamberOrchestra\ImageBundle\Serializer\Attribute\ImageFilter;
+use ChamberOrchestra\ImageBundle\Serializer\Metadata\ImageFilterMetadataFactory;
 use ChamberOrchestra\ImageBundle\Serializer\Normalizer\ImageFilterAttributeNormalizer;
 use ChamberOrchestra\ImageBundle\Twig\ImageRuntime;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
+#[AllowMockObjectsWithoutExpectations]
 class ImageFilterAttributeNormalizerTest extends TestCase
 {
     private ImageRuntime $imageRuntime;
@@ -27,7 +30,8 @@ class ImageFilterAttributeNormalizerTest extends TestCase
     protected function setUp(): void
     {
         $this->imageRuntime = $this->createMock(ImageRuntime::class);
-        $this->normalizer = new ImageFilterAttributeNormalizer($this->imageRuntime);
+        $metadataFactory = new ImageFilterMetadataFactory();
+        $this->normalizer = new ImageFilterAttributeNormalizer($this->imageRuntime, $metadataFactory);
 
         $parentNormalizer = $this->createMock(NormalizerInterface::class);
         $parentNormalizer->method('normalize')->willReturnCallback(
@@ -145,6 +149,7 @@ class ImageFilterAttributeNormalizerTest extends TestCase
             self::assertArrayHasKey('1x', $result['coverArt']['default'][$format]);
             self::assertArrayHasKey('2x', $result['coverArt']['default'][$format]);
             self::assertArrayHasKey('3x', $result['coverArt']['default'][$format]);
+            self::assertArrayHasKey('4x', $result['coverArt']['default'][$format]);
         }
     }
 
@@ -181,7 +186,7 @@ class ImageFilterAttributeNormalizerTest extends TestCase
         $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
         $object = $this->createObjectWithFile($fixture, 'scores/moonlight_sonata.jpg');
 
-        $this->imageRuntime->expects($this->exactly(6))
+        $this->imageRuntime->expects($this->exactly(8))
             ->method('fill')
             ->willReturn('/cached/fill');
 
@@ -204,7 +209,7 @@ class ImageFilterAttributeNormalizerTest extends TestCase
             }
         };
 
-        $this->imageRuntime->expects($this->exactly(6))
+        $this->imageRuntime->expects($this->exactly(8))
             ->method('fit')
             ->willReturn('/cached/fit');
 
@@ -227,7 +232,7 @@ class ImageFilterAttributeNormalizerTest extends TestCase
             }
         };
 
-        $this->imageRuntime->expects($this->exactly(6))
+        $this->imageRuntime->expects($this->exactly(8))
             ->method('optimize')
             ->willReturn('/cached/optimize');
 
@@ -285,6 +290,37 @@ class ImageFilterAttributeNormalizerTest extends TestCase
     }
 
     #[Test]
+    public function customDensitiesLimitGeneratedUrls(): void
+    {
+        $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
+        $object = new class($fixture) {
+            public string $title = 'Mazurka Op. 7';
+
+            #[ImageFilter(filter: 'fill', width: 200, height: 200, densities: [1, 2])]
+            public ?File $coverArt = null;
+
+            public function __construct(string $path)
+            {
+                $this->coverArt = new File($path, '/scores/moonlight_sonata.jpg');
+            }
+        };
+
+        // 2 densities × 2 formats = 4 calls
+        $this->imageRuntime->expects($this->exactly(4))
+            ->method('fill')
+            ->willReturn('/cached/url');
+
+        $result = $this->normalizer->normalize($object);
+
+        $sources = $result['coverArt']['default'];
+        foreach (['avif', 'webp'] as $format) {
+            self::assertArrayHasKey('1x', $sources[$format]);
+            self::assertArrayHasKey('2x', $sources[$format]);
+            self::assertArrayNotHasKey('3x', $sources[$format]);
+        }
+    }
+
+    #[Test]
     public function emptyUriNormalizesToNull(): void
     {
         $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
@@ -303,6 +339,146 @@ class ImageFilterAttributeNormalizerTest extends TestCase
         $result = $this->normalizer->normalize($object);
 
         self::assertNull($result['coverArt']);
+    }
+
+    #[Test]
+    public function ignoredAttributesAreRespected(): void
+    {
+        $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
+        $object = $this->createObjectWithFile($fixture, '/scores/moonlight_sonata.jpg');
+
+        $this->imageRuntime->method('fill')->willReturn('/cached/url');
+
+        $result = $this->normalizer->normalize($object, context: [
+            \Symfony\Component\Serializer\Normalizer\AbstractNormalizer::IGNORED_ATTRIBUTES => ['coverArt'],
+        ]);
+
+        self::assertArrayNotHasKey('coverArt', $result);
+    }
+
+    #[Test]
+    public function allowedAttributesAreRespected(): void
+    {
+        $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
+        $object = $this->createObjectWithFile($fixture, '/scores/moonlight_sonata.jpg');
+
+        $result = $this->normalizer->normalize($object, context: [
+            \Symfony\Component\Serializer\Normalizer\AbstractNormalizer::ATTRIBUTES => ['title'],
+        ]);
+
+        self::assertArrayHasKey('title', $result);
+        self::assertArrayNotHasKey('coverArt', $result);
+    }
+
+    #[Test]
+    public function associativeAllowedAttributesAreRespected(): void
+    {
+        $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
+        $object = $this->createObjectWithFile($fixture, '/scores/moonlight_sonata.jpg');
+
+        $this->imageRuntime->method('fill')->willReturn('/cached/url');
+
+        // Associative form: ['coverArt' => []] — property name as key
+        $result = $this->normalizer->normalize($object, context: [
+            \Symfony\Component\Serializer\Normalizer\AbstractNormalizer::ATTRIBUTES => ['coverArt' => []],
+        ]);
+
+        self::assertArrayHasKey('coverArt', $result);
+        self::assertIsArray($result['coverArt']);
+        self::assertArrayHasKey('default', $result['coverArt']);
+    }
+
+    #[Test]
+    public function nestedAttributesFilterPrunesSourceTree(): void
+    {
+        $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
+        $object = $this->createObjectWithFile($fixture, '/scores/moonlight_sonata.jpg');
+
+        $this->imageRuntime->method('fill')->willReturn('/cached/url');
+
+        // Request only default -> avif -> 1x
+        $result = $this->normalizer->normalize($object, context: [
+            \Symfony\Component\Serializer\Normalizer\AbstractNormalizer::ATTRIBUTES => [
+                'coverArt' => ['default' => ['avif' => ['1x']]],
+            ],
+        ]);
+
+        $sources = $result['coverArt'];
+        self::assertArrayHasKey('default', $sources);
+        self::assertCount(1, $sources);
+
+        $default = $sources['default'];
+        self::assertArrayHasKey('avif', $default);
+        self::assertArrayNotHasKey('webp', $default);
+        self::assertCount(1, $default);
+
+        self::assertArrayHasKey('1x', $default['avif']);
+        self::assertArrayNotHasKey('2x', $default['avif']);
+        self::assertArrayNotHasKey('3x', $default['avif']);
+    }
+
+    #[Test]
+    public function emptyNestedAttributesFilterReturnsFullTree(): void
+    {
+        $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
+        $object = $this->createObjectWithFile($fixture, '/scores/moonlight_sonata.jpg');
+
+        $this->imageRuntime->method('fill')->willReturn('/cached/url');
+
+        // Empty sub-filter means "include everything"
+        $result = $this->normalizer->normalize($object, context: [
+            \Symfony\Component\Serializer\Normalizer\AbstractNormalizer::ATTRIBUTES => [
+                'coverArt' => [],
+            ],
+        ]);
+
+        $sources = $result['coverArt']['default'];
+        self::assertArrayHasKey('avif', $sources);
+        self::assertArrayHasKey('webp', $sources);
+        self::assertCount(4, $sources['avif']);
+    }
+
+    #[Test]
+    public function associativeAllowedAttributesExcludesUnlisted(): void
+    {
+        $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
+        $object = $this->createObjectWithFile($fixture, '/scores/moonlight_sonata.jpg');
+
+        // Associative form with only 'title' — coverArt should be excluded
+        $result = $this->normalizer->normalize($object, context: [
+            \Symfony\Component\Serializer\Normalizer\AbstractNormalizer::ATTRIBUTES => ['title' => []],
+        ]);
+
+        self::assertArrayNotHasKey('coverArt', $result);
+    }
+
+    #[Test]
+    public function optimizeUsesDefaultWidthWhenZero(): void
+    {
+        $fixture = __DIR__.'/../../../Fixtures/moonlight_sonata.jpg';
+        $object = new class($fixture) {
+            public string $title = 'Polonaise in A-flat';
+
+            #[ImageFilter(filter: 'optimize')]
+            public ?File $coverArt = null;
+
+            public function __construct(string $path)
+            {
+                $this->coverArt = new File($path, '/scores/moonlight_sonata.jpg');
+            }
+        };
+
+        $this->imageRuntime->expects($this->atLeastOnce())
+            ->method('optimize')
+            ->with(
+                $this->anything(),
+                1200,
+                $this->anything(),
+                $this->anything(),
+            )
+            ->willReturn('/cached/optimized');
+
+        $this->normalizer->normalize($object);
     }
 
     #[Test]
