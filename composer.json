@@ -76,7 +76,7 @@
     "symfony/filesystem": "8.0.*",
     "symfony/http-foundation": "8.0.*",
     "symfony/http-kernel": "8.0.*",
-    "symfony/mime": "8.0.*",
+    "symfony/mime": "8.1.*",
     "symfony/options-resolver": "8.0.*",
     "symfony/process": "8.0.*",
     "symfony/routing": "8.0.*"
