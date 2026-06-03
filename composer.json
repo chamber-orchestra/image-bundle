@@ -79,7 +79,7 @@
     "symfony/mime": "8.0.*",
     "symfony/options-resolver": "8.0.*",
     "symfony/process": "8.0.*",
-    "symfony/routing": "8.0.*"
+    "symfony/routing": "8.1.*"
   },
   "require-dev": {
     "ext-gd": "*",
