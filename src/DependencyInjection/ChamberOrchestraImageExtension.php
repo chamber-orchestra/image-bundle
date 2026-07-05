@@ -112,7 +112,7 @@ final class ChamberOrchestraImageExtension extends ConfigurableExtension
         $filters = $config['filters'];
 
         $globalAsync = match ($config['async']) {
-            'auto' => \class_exists(\Symfony\Component\Messenger\MessageBusInterface::class),
+            'auto' => \interface_exists(\Symfony\Component\Messenger\MessageBusInterface::class),
             true => true,
             default => false,
         };

@@ -59,7 +59,7 @@ class MozJpegPostProcessor extends AbstractPostProcessor implements PostProcesso
             return $binary;
         }
 
-        $command = [$this->bin, '-quant-table', 2, '-optimise'];
+        $command = [$this->bin, '-quant-table', '2', '-optimise'];
 
         /** @var array<string, mixed> $options */
         $options = \array_replace_recursive($this->options, $options);
