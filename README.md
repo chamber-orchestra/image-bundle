@@ -202,7 +202,9 @@ chamber_orchestra_image:
             # uri_prefix: ~           # optional: https://cdn.example.com
             # cache_prefix: media     # default — S3 key prefix
             # cache_control: 'public, max-age=31536000'  # default — Cache-Control header on uploaded objects
-            # acl: ~                  # optional: S3 ACL (e.g. 'public-read')
+            # acl: ~                  # optional: S3 canned ACL; one of private, public-read,
+            #                          # public-read-write, authenticated-read, aws-exec-read,
+            #                          # bucket-owner-read, bucket-owner-full-control
 
             # --- custom resolver options ---
             # service: App\MyResolver # service ID implementing ResolverInterface
