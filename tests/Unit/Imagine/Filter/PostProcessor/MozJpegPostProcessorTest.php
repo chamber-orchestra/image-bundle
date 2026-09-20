@@ -69,12 +69,6 @@ class MozJpegPostProcessorTest extends TestCase
     }
 
     #[Test]
-    public function getIndexNameReturnsMozjpeg(): void
-    {
-        self::assertSame('mozjpeg', MozJpegPostProcessor::getIndexName());
-    }
-
-    #[Test]
     public function processAttemptsToRunForJpegMimeType(): void
     {
         $binary = $this->createMock(BinaryInterface::class);

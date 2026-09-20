@@ -13,9 +13,11 @@ namespace ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor;
 
 use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
 use ChamberOrchestra\ImageBundle\Model\Binary;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
+#[AsTaggedItem(index: 'pngquant')]
 class PngquantPostProcessor extends AbstractPostProcessor implements PostProcessorInterface
 {
     /**

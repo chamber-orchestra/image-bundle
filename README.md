@@ -1727,8 +1727,8 @@ Because image URLs are content-addressed (the hash changes when the source or op
 
 ## Extension points
 
-- **Custom processors**: implement `ProcessorInterface`, auto-tagged `chamber_orchestra_image.filter.processor`
-- **Custom post-processors**: implement `PostProcessorInterface`, auto-tagged `chamber_orchestra_image.filter.post_processor`
+- **Custom processors**: implement `ProcessorInterface`, auto-tagged `chamber_orchestra_image.filter.processor`, and add `#[AsTaggedItem(index: 'my_filter')]` to set the key used in `filters.<name>.processors`
+- **Custom post-processors**: implement `PostProcessorInterface`, auto-tagged `chamber_orchestra_image.filter.post_processor`, and add `#[AsTaggedItem(index: 'my_post_filter')]` to set the key used in `filters.<name>.post_processors`
 - **Custom loaders**: implement `LoaderFactoryInterface`, register in your bundle's `build()` method
 - **Custom resolvers**: implement `ResolverFactoryInterface`, register in your bundle's `build()` method, or use `type: custom` with a service ID
 - **Enums**: `ImageFormat` (png, jpg, webp, avif, ...) and `ImagineDriver` (Gd, Imagick, Gmagick) are available for type-safe configuration

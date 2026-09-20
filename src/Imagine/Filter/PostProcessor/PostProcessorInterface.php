@@ -24,6 +24,4 @@ interface PostProcessorInterface
      * @param array<string, mixed> $options
      */
     public function process(BinaryInterface $binary, array $options): BinaryInterface;
-
-    public static function getIndexName(): string;
 }

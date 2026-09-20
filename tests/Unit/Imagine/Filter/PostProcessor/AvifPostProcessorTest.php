@@ -57,12 +57,6 @@ class AvifPostProcessorTest extends TestCase
     }
 
     #[Test]
-    public function getIndexNameReturnsAvifenc(): void
-    {
-        self::assertSame('avifenc', AvifPostProcessor::getIndexName());
-    }
-
-    #[Test]
     public function constructorMergesDefaultOptions(): void
     {
         $binary = $this->createMock(BinaryInterface::class);
