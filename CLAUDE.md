@@ -63,8 +63,8 @@ composer run-script cs-check
 
 - Custom resolvers via factory pattern: implement `ResolverFactoryInterface`, register in bundle's `build()`
 - Custom loaders via factory pattern: implement `LoaderFactoryInterface`
-- Custom processors: implement `ProcessorInterface`, auto-tagged `chamber_orchestra_image.filter.processor`
-- Custom post-processors: implement `PostProcessorInterface`, auto-tagged `chamber_orchestra_image.filter.post_processor`
+- Custom processors: implement `ProcessorInterface`, auto-tagged `chamber_orchestra_image.filter.processor`; the filter key comes from `#[AsTaggedItem(index: '...')]`
+- Custom post-processors: implement `PostProcessorInterface`, auto-tagged `chamber_orchestra_image.filter.post_processor`; the filter key comes from `#[AsTaggedItem(index: '...')]`
 
 ### Configuration
 

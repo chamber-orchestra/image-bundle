@@ -16,7 +16,7 @@
 ## Coding Style & Naming Conventions
 - Follow PSR-12: 4-space indent, one class per file, strict types (`declare(strict_types=1);`).
 - Use typed properties and return types; favor `readonly` where appropriate.
-- Processors implement `ProcessorInterface` with `getIndexName()` static method.
+- Processors implement `ProcessorInterface` and declare their filter key with `#[AsTaggedItem(index: '...')]`.
 - Post-processors implement `PostProcessorInterface` and extend `AbstractPostProcessor`.
 - Keep constructors light; prefer small, composable services injected via Symfony DI.
 

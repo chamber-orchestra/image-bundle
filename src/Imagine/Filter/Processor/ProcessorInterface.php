@@ -22,6 +22,4 @@ interface ProcessorInterface
      * @param array<string, mixed> $config
      */
     public function apply(ImageInterface $image, array $options = [], array &$config = []): ImageInterface;
-
-    public static function getIndexName(): string;
 }

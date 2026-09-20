@@ -99,10 +99,4 @@ class InterlaceProcessorTest extends TestCase
 
         self::assertSame('value', $config['existing']);
     }
-
-    #[Test]
-    public function getIndexNameReturnsInterlace(): void
-    {
-        self::assertSame('interlace', InterlaceProcessor::getIndexName());
-    }
 }

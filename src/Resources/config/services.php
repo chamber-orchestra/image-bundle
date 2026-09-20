@@ -77,8 +77,8 @@ return static function (ContainerConfigurator $container): void {
     ;
 
     $services->set(FilterManager::class)
-        ->arg('$processorsLocator', tagged_locator('chamber_orchestra_image.filter.processor', defaultIndexMethod: 'getIndexName'))
-        ->arg('$postProcessorsLocator', tagged_locator('chamber_orchestra_image.filter.post_processor', defaultIndexMethod: 'getIndexName'))
+        ->arg('$processorsLocator', tagged_locator('chamber_orchestra_image.filter.processor'))
+        ->arg('$postProcessorsLocator', tagged_locator('chamber_orchestra_image.filter.post_processor'))
     ;
 
     $services->set(FilterConfiguration::class)

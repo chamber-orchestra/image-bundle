@@ -14,7 +14,9 @@ namespace ChamberOrchestra\ImageBundle\Imagine\Filter\Processor;
 use Imagine\Filter\Basic\Resize;
 use Imagine\Image\Box;
 use Imagine\Image\ImageInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
+#[AsTaggedItem(index: 'fit')]
 class FitProcessor extends AbstractResizeProcessor
 {
     /**

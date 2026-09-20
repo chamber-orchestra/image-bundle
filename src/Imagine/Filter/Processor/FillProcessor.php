@@ -16,7 +16,9 @@ use Imagine\Filter\Basic\Resize;
 use Imagine\Image\Box;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Point;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
+#[AsTaggedItem(index: 'fill')]
 class FillProcessor extends AbstractResizeProcessor
 {
     /**

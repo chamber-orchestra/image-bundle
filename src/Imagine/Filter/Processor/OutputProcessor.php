@@ -14,8 +14,10 @@ namespace ChamberOrchestra\ImageBundle\Imagine\Filter\Processor;
 use ChamberOrchestra\ImageBundle\Enum\ImageFormat;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\ImagineInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+#[AsTaggedItem(index: 'output')]
 class OutputProcessor extends AbstractProcessor
 {
     private OptionsResolver $resolver;
