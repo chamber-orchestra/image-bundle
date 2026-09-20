@@ -85,7 +85,7 @@
     "ext-gd": "*",
     "ext-gmagick": "*",
     "ext-imagick": "*",
-    "aws/aws-sdk-php": "^3.394",
+    "aws/aws-sdk-php": "^3.395",
     "chamber-orchestra/view-bundle": "8.1.*",
     "friendsofphp/php-cs-fixer": "^3.95",
     "phpstan/phpstan": "^2.2",
@@ -94,7 +94,7 @@
     "symfony/lock": "^8.1",
     "symfony/messenger": "^8.1",
     "symfony/serializer": "8.1.*",
-    "twig/twig": "^3.28",
+    "twig/twig": "^3.29",
     "vincentlanglet/twig-cs-fixer": "^4.1"
   },
   "suggest": {
