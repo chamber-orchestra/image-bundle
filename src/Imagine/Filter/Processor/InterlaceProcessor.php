@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace ChamberOrchestra\ImageBundle\Imagine\Filter\Processor;
 
 use Imagine\Image\ImageInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
+#[AsTaggedItem(index: 'interlace')]
 class InterlaceProcessor extends AbstractProcessor
 {
     /**

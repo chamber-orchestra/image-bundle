@@ -57,12 +57,6 @@ class CwebpPostProcessorTest extends TestCase
     }
 
     #[Test]
-    public function getIndexNameReturnsCwebp(): void
-    {
-        self::assertSame('cwebp', CwebpPostProcessor::getIndexName());
-    }
-
-    #[Test]
     public function constructorMergesDefaultOptions(): void
     {
         // With default binary that won't run, but we can verify it processes jpeg

@@ -16,9 +16,20 @@ use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
 
 class S3Resolver implements ResolverInterface
 {
+    public const string ACL_PRIVATE = 'private';
+    public const string ACL_PUBLIC_READ = 'public-read';
+    public const string ACL_PUBLIC_READ_WRITE = 'public-read-write';
+    public const string ACL_AUTHENTICATED_READ = 'authenticated-read';
+    public const string ACL_AWS_EXEC_READ = 'aws-exec-read';
+    public const string ACL_BUCKET_OWNER_READ = 'bucket-owner-read';
+    public const string ACL_BUCKET_OWNER_FULL_CONTROL = 'bucket-owner-full-control';
+
     private string $cachePrefix;
     private ?string $uriPrefix;
 
+    /**
+     * @param self::ACL_*|null $acl
+     */
     public function __construct(
         private readonly S3Client $client,
         private readonly string $bucket,

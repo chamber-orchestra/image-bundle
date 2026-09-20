@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Imagine\Filter\Processor;
 
-use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\FillProcessor;
-use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\FitProcessor;
 use ChamberOrchestra\ImageBundle\Imagine\Filter\Processor\StripProcessor;
 use Imagine\Image\ImageInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -47,23 +45,5 @@ class StripProcessorTest extends TestCase
         $processor->apply($image, [], $config);
 
         self::assertSame('some_value', $config['some_key']);
-    }
-
-    #[Test]
-    public function getIndexNameReturnsStrip(): void
-    {
-        self::assertSame('strip', StripProcessor::getIndexName());
-    }
-
-    #[Test]
-    public function fitProcessorGetIndexNameReturnsFit(): void
-    {
-        self::assertSame('fit', FitProcessor::getIndexName());
-    }
-
-    #[Test]
-    public function fillProcessorGetIndexNameReturnsFill(): void
-    {
-        self::assertSame('fill', FillProcessor::getIndexName());
     }
 }

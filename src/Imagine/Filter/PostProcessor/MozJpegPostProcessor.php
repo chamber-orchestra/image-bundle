@@ -13,9 +13,11 @@ namespace ChamberOrchestra\ImageBundle\Imagine\Filter\PostProcessor;
 
 use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
 use ChamberOrchestra\ImageBundle\Model\Binary;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
+#[AsTaggedItem(index: 'mozjpeg')]
 class MozJpegPostProcessor extends AbstractPostProcessor implements PostProcessorInterface
 {
     /**
@@ -36,12 +38,6 @@ class MozJpegPostProcessor extends AbstractPostProcessor implements PostProcesso
         /** @var array<string, mixed> $merged */
         $merged = \array_replace_recursive($this->options, $options);
         $this->options = $merged;
-    }
-
-    #[\Override]
-    public static function getIndexName(): string
-    {
-        return 'mozjpeg';
     }
 
     /**

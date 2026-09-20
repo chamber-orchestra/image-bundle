@@ -13,7 +13,9 @@ namespace ChamberOrchestra\ImageBundle\Imagine\Filter\Processor;
 
 use Imagine\Image\Box;
 use Imagine\Image\ImageInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
+#[AsTaggedItem(index: 'optimize')]
 class OptimizeProcessor extends FitProcessor
 {
     /**

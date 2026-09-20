@@ -15,9 +15,11 @@ use ChamberOrchestra\ImageBundle\Binary\BinaryInterface;
 use ChamberOrchestra\ImageBundle\Binary\FileBinaryInterface;
 use ChamberOrchestra\ImageBundle\Exception\RuntimeException;
 use ChamberOrchestra\ImageBundle\Model\Binary;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
+#[AsTaggedItem(index: 'cwebp')]
 class CwebpPostProcessor extends AbstractPostProcessor implements PostProcessorInterface
 {
     /**
@@ -42,12 +44,6 @@ class CwebpPostProcessor extends AbstractPostProcessor implements PostProcessorI
         $merged = \array_replace_recursive($this->options, $options);
         $this->options = $merged;
         $this->tempDir = \sys_get_temp_dir();
-    }
-
-    #[\Override]
-    public static function getIndexName(): string
-    {
-        return 'cwebp';
     }
 
     /**

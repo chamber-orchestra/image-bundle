@@ -68,10 +68,4 @@ class PngquantPostProcessorTest extends TestCase
         $result = $processor->process($binary, []);
         self::assertSame($binary, $result);
     }
-
-    #[Test]
-    public function getIndexNameReturnsPngquant(): void
-    {
-        self::assertSame('pngquant', PngquantPostProcessor::getIndexName());
-    }
 }

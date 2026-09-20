@@ -126,10 +126,4 @@ class OutputProcessorTest extends TestCase
         self::assertSame($image, $result);
         self::assertNull($config['format']);
     }
-
-    #[Test]
-    public function getIndexNameReturnsOutput(): void
-    {
-        self::assertSame('output', OutputProcessor::getIndexName());
-    }
 }

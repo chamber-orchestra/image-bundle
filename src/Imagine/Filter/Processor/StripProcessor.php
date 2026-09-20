@@ -13,7 +13,9 @@ namespace ChamberOrchestra\ImageBundle\Imagine\Filter\Processor;
 
 use Imagine\Filter\Basic\Strip;
 use Imagine\Image\ImageInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
+#[AsTaggedItem(index: 'strip')]
 class StripProcessor extends AbstractProcessor
 {
     /**
