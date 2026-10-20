@@ -68,7 +68,7 @@
   "require": {
     "php": "^8.5",
     "ext-exif": "*",
-    "chamber-orchestra/file-bundle": "8.1.*",
+    "chamber-orchestra/file-bundle": "~8.1.5",
     "imagine/imagine": "^1.5",
     "psr/cache": "^3.0",
     "symfony/config": "8.1.*",
@@ -103,6 +103,7 @@
     "ext-gmagick": "Alternative image driver via GraphicsMagick",
     "twig/twig": "Required for image_filter, fit, fill, optimize, and avif Twig filters and responsive <picture> macros",
     "aws/aws-sdk-php": "Required for S3 loader and resolver support (MinIO, DigitalOcean Spaces)",
+    "ext-curl": "Required for an S3 resolver with the http block",
     "symfony/messenger": "Required for async image processing — auto-detected when installed",
     "symfony/serializer": "Required for ImageFilterAttributeNormalizer — generates image URLs in API responses via #[ImageFilter] attribute",
     "symfony/lock": "Required for dispatch deduplication and worker concurrency limiting",

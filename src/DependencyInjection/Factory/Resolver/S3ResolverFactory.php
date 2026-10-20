@@ -12,13 +12,17 @@ declare(strict_types=1);
 namespace ChamberOrchestra\ImageBundle\DependencyInjection\Factory\Resolver;
 
 use Aws\S3\S3Client;
+use ChamberOrchestra\FileBundle\Storage\S3RedirectGuard;
 use ChamberOrchestra\ImageBundle\Imagine\Cache\Resolver\S3Resolver;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\FloatNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 
 class S3ResolverFactory extends AbstractResolverFactory implements ResolverFactoryInterface
 {
+    private const array SUPPORTED_RETRY_MODES = ['legacy', 'standard', 'adaptive'];
+
     /**
      * @param array<string, mixed> $config
      */
@@ -51,7 +55,33 @@ class S3ResolverFactory extends AbstractResolverFactory implements ResolverFacto
             ];
         }
 
+        // Absent blocks are not passed, so the client definition stays as before; the options mirror file-bundle 8.1.5 storages.
+        if (isset($config['http'])) {
+            /** @var array{connect_timeout: float, timeout: float} $http */
+            $http = $config['http'];
+            $clientArgs['http'] = [
+                'connect_timeout' => $http['connect_timeout'],
+                'timeout' => $http['timeout'],
+                // never follow a redirect, so one SDK attempt is one transfer (S3RedirectGuard turns the 3xx into an error)
+                'allow_redirects' => false,
+                // never reuse a connection, so Guzzle never re-sends on a dead reused one; needs ext-curl
+                'curl' => [\CURLOPT_FORBID_REUSE => true],
+            ];
+        }
+
+        if (isset($config['retries'])) {
+            /** @var array{mode: string, max_attempts: int} $retries */
+            $retries = $config['retries'];
+            $clientArgs['retries'] = [
+                'mode' => $retries['mode'],
+                'max_attempts' => $retries['max_attempts'],
+            ];
+        }
+
         $clientDefinition = new Definition(S3Client::class, [$clientArgs]);
+        if (isset($config['http'])) {
+            $clientDefinition->setConfigurator([S3RedirectGuard::class, 'register']);
+        }
         $clientId = \sprintf('chamber_orchestra_image.cache.resolver.%s.client', $name);
         $container->setDefinition($clientId, $clientDefinition);
 
@@ -117,7 +147,50 @@ class S3ResolverFactory extends AbstractResolverFactory implements ResolverFacto
                     ->end()
                     ->info('Explicit AWS credentials. Omit to use default credential chain.')
                 ->end()
+                ->arrayNode('http')
+                    ->info('S3 client HTTP timeouts. If set, both keys are required.')
+                    ->children()
+                        ->append(self::positiveSeconds('connect_timeout', 'Connection phase timeout, seconds.'))
+                        ->append(self::positiveSeconds('timeout', 'Whole transfer timeout including the connection, seconds.'))
+                    ->end()
+                ->end()
+                ->arrayNode('retries')
+                    ->info('S3 client retry policy. If set, both keys are required.')
+                    ->children()
+                        ->enumNode('mode')
+                            ->values(self::SUPPORTED_RETRY_MODES)
+                            ->isRequired()
+                        ->end()
+                        ->integerNode('max_attempts')
+                            ->min(1)
+                            ->isRequired()
+                            ->info('Total attempts per operation, the first one included.')
+                        ->end()
+                    ->end()
+                ->end()
             ->end()
         ;
+    }
+
+    private static function positiveSeconds(string $name, string $info): FloatNodeDefinition
+    {
+        $node = new FloatNodeDefinition($name);
+        $node
+            ->info($info)
+            ->isRequired()
+            ->beforeNormalization()
+                // FloatNode accepts an int but returns it unchanged; the S3 client contract wants a float.
+                ->ifTrue(static fn (mixed $v): bool => \is_int($v))
+                ->then(static fn (int $v): float => (float) $v)
+            ->end()
+            ->validate()
+                // below 1 ms or infinite, Guzzle 7 silently drops the timeout and Guzzle 8 fails every request
+                ->ifTrue(static fn (float $v): bool => !(\is_finite($v) && $v >= 0.001))
+                // not thenInvalid(): it formats with json_encode(), which cannot encode INF
+                ->then(static fn (float $v): never => throw new \InvalidArgumentException(\sprintf('The value must be a finite number of seconds >= 0.001, got %s.', \var_export($v, true))))
+            ->end()
+        ;
+
+        return $node;
     }
 }
