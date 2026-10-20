@@ -71,14 +71,16 @@ Built for PHP 8.5 and Symfony 8. A modern, type-safe alternative to LiipImagineB
 | Dependency | Version |
 |---|---|
 | PHP | `^8.5` |
-| Symfony | `8.0.*` |
-| imagine/imagine | `^1.3` |
+| Symfony | `8.1.*` |
+| chamber-orchestra/file-bundle | `~8.1.5` |
+| imagine/imagine | `^1.5` |
 | psr/cache | `^3.0` |
 | ext-exif | `*` |
 | ext-imagick *(recommended)* | any |
 
 **Optional CLI binaries:** `avifenc`, `cwebp`, `cjpeg` (MozJPEG), `pngquant`
 **Optional package:** `aws/aws-sdk-php` (for S3 loader/resolver)
+**Optional extension:** `ext-curl` (required for an S3 resolver with the `http` block)
 
 ---
 
@@ -205,6 +207,12 @@ chamber_orchestra_image:
             # acl: ~                  # optional: S3 canned ACL; one of private, public-read,
             #                          # public-read-write, authenticated-read, aws-exec-read,
             #                          # bucket-owner-read, bucket-owner-full-control
+            # http:                   # optional: S3 client timeouts; if set, both keys are required
+            #     connect_timeout: 5  # seconds, finite, >= 0.001
+            #     timeout: 10         # seconds, finite, >= 0.001 — the whole transfer
+            # retries:                # optional: S3 client retry policy; if set, both keys are required
+            #     mode: standard      # legacy | standard | adaptive
+            #     max_attempts: 2     # >= 1, the first attempt included
 
             # --- custom resolver options ---
             # service: App\MyResolver # service ID implementing ResolverInterface
@@ -861,6 +869,36 @@ resolvers:
         uri_prefix: https://cdn.example.com  # optional: CDN URL prefix
         cache_prefix: media                  # S3 key prefix (default: media)
 ```
+
+#### S3 timeouts and retries
+
+Without them, a hung S3 endpoint blocks the resolver for as long as the connection stays open. Two optional blocks set
+the HTTP timeouts and the retry policy of the resolver's `S3Client`, with the same keys and rules as the `http` and
+`retries` blocks of a `chamber-orchestra/file-bundle` (>= 8.1.5) S3 storage:
+
+```yaml
+resolvers:
+    default:
+        type: s3
+        bucket: my-bucket
+        http:
+            connect_timeout: 5   # seconds, finite, >= 0.001: the connection phase only
+            timeout: 10          # seconds, finite, >= 0.001: the whole transfer, connection included
+        retries:
+            mode: standard       # legacy, standard or adaptive
+            max_attempts: 2      # >= 1, the first attempt included
+```
+
+- If a block is set, every key of that block is required. A missing, unknown or invalid key fails configuration
+  processing with an `InvalidConfigurationException` that names the key path, e.g.
+  `chamber_orchestra_image.resolvers.default.http.timeout`. Write the values as literals: Symfony validates an
+  `%env(float:…)%` or `%env(int:…)%` placeholder with a dummy `0`, which fails the minimum.
+- A block that is not set is not passed to the client, so without both blocks the client is built exactly as before
+  and the SDK defaults apply. Other resolver types accept and ignore both blocks.
+- With `http` set, the client does not follow redirects and never reuses a connection (`CURLOPT_FORBID_REUSE`, so
+  `ext-curl` is required), and file-bundle's `S3RedirectGuard` turns a 3xx answer into an error that is not retried.
+- What the timeouts do not bound (credential resolution without static `credentials`, the PHP stream handler, DNS
+  resolution) and how each 3xx surfaces are described in the file-bundle README, section "S3 timeouts and retries".
 
 ### `cache` (PSR-6 decorator)
 

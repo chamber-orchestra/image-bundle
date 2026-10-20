@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 A Symfony bundle for on-demand image processing, caching, and serving. Modelled after LiipImagineBundle. Processes images through named filter pipelines (chains of processors and post-processors), caches results to the filesystem, and serves them via a controller that redirects to the cached URL.
 
 **Package:** `chamber-orchestra/image-bundle`
-**Requirements:** PHP ^8.5, `imagine/imagine`, Symfony 8.0 components, `ext-exif`
+**Requirements:** PHP ^8.5, `imagine/imagine`, Symfony 8.1 components, `ext-exif`, `chamber-orchestra/file-bundle` `~8.1.5`
 **Namespace:** `ChamberOrchestra\ImageBundle` (PSR-4 from `src/`)
 **Bundle class:** `ChamberOrchestraImageBundle`
 
@@ -71,7 +71,12 @@ composer run-script cs-check
 Config tree under `chamber_orchestra_image`:
 - `driver`: Gd, Imagick, or Gmagick
 - `filters`: named filter definitions with `output`, `processors`, `post_processors`
-- `resolvers`: named resolver configs
+- `resolvers`: named resolver configs. The `s3` resolver (`S3ResolverFactory`) takes optional `http`
+  (`connect_timeout`, `timeout`: finite floats >= 0.001) and `retries` (`mode`: legacy|standard|adaptive,
+  `max_attempts` >= 1) blocks, with the rules of file-bundle 8.1.5 storages: every key of a set block is required, an
+  unset block is not passed to the `S3Client` (definition unchanged). With `http` the client also gets
+  `allow_redirects: false`, `curl: [CURLOPT_FORBID_REUSE => true]` (needs `ext-curl`) and file-bundle's
+  `S3RedirectGuard::register` as its configurator. Covered by `tests/Unit/DependencyInjection/Factory/Resolver/S3ResolverFactoryTest.php`
 - `loaders`: named loader configs
 - `default_image`: fallback image path
 
@@ -79,7 +84,7 @@ Config tree under `chamber_orchestra_image`:
 
 - PHPUnit 13.x with `failOnRisky` and `failOnWarning`; tests autoloaded as `Tests\`
 - Unit tests only, in `tests/Unit/` — use PHPUnit 13 attributes (`#[Test]`)
-- CI: GitHub Actions on `master` / `8.0` branches, PHP 8.5
+- CI: GitHub Actions on `main` / `x.y` branches and pull requests, PHP 8.5
 
 ## Code Style
 
@@ -96,7 +101,7 @@ Config tree under `chamber_orchestra_image`:
 
 ## Dependencies
 
-- Requires PHP 8.5, `ext-exif`, `imagine/imagine`, Symfony 8.0 components (`config`, `dependency-injection`, `filesystem`, `http-foundation`, `http-kernel`, `mime`, `options-resolver`, `process`, `routing`), `psr/cache`
+- Requires PHP 8.5, `ext-exif`, `imagine/imagine`, `chamber-orchestra/file-bundle` `~8.1.5` (the s3 resolver uses its `S3RedirectGuard`), Symfony 8.1 components (`config`, `dependency-injection`, `filesystem`, `http-foundation`, `http-kernel`, `mime`, `options-resolver`, `process`, `routing`), `psr/cache`
 - Dev: PHPUnit 13, `php-cs-fixer`, `psr/log`, `twig/twig`
 - Main branch is `main`
 

@@ -5,7 +5,7 @@
 - Autoloading is PSR-4 from the package root (no `src/` directory).
 - Key directories: `Binary/` (loaders, locators, mime), `Controller/`, `DependencyInjection/` (extension, config, factories), `EventSubscriber/`, `Exception/`, `Imagine/` (cache, data, filter), `Model/`, `Service/`, `Twig/`.
 - Tests belong in `tests/` (autoloaded as `Tests\`); tools are in `bin/` (`bin/phpunit`).
-- Requirements: PHP 8.5+, `imagine/imagine`, Symfony 8.0 components.
+- Requirements: PHP 8.5+, `imagine/imagine`, `chamber-orchestra/file-bundle` `~8.1.5`, Symfony 8.1 components.
 
 ## Build, Test, and Development Commands
 - Install dependencies: `composer install`.
